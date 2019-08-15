@@ -1,0 +1,60 @@
+﻿<mah:MetroWindow 
+    x:Class="SpriteFactory.MainWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:spriteFactory="clr-namespace:SpriteFactory"
+    xmlns:sprites="clr-namespace:SpriteFactory.Sprites"
+    xmlns:monoGameControls="clr-namespace:SpriteFactory.MonoGameControls"
+    mc:Ignorable="d"
+    Title="Sprite Factory" 
+    WindowStartupLocation="CenterScreen"
+    WindowState="Maximized"
+    Width="800"
+    Height="480"
+    d:DataContext="{d:DesignInstance local:MainWindowViewModel, IsDesignTimeCreatable=False}">
+
+    <Window.DataContext>
+        <spriteFactory:MainWindowViewModel />
+    </Window.DataContext>
+
+    <DockPanel LastChildFill="True">
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New" />
+                <MenuItem Header="_Open..." />
+                <Separator />
+                <MenuItem Header="_Save" />
+                <MenuItem Header="Save _As..." />
+                <Separator />
+                <MenuItem Header="E_xit" Click="Exit_OnClick" />
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="_Undo" />
+                <MenuItem Header="_Redo" />
+                <Separator />
+                <MenuItem Header="Cu_t" />
+                <MenuItem Header="_Copy" />
+                <MenuItem Header="_Paste" />
+                <MenuItem Header="_Delete" />
+                <Separator />
+                <MenuItem Header="Select _All" />
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About Sprite Factory" />
+            </MenuItem>
+        </Menu>
+
+        <sprites:SpriteEditorView
+            DataContext="{Binding SpriteEditor}"
+            DockPanel.Dock="Right" 
+            Width="500" />
+
+        <monoGameControls:MonoGameContentControl 
+            x:Name="MonoGameContent"
+            Cursor="{Binding Cursor}"
+            AllowDrop="True" />
+    </DockPanel>
+</mah:MetroWindow>

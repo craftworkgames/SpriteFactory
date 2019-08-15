@@ -1,0 +1,56 @@
+﻿<Application 
+    x:Class="SpriteFactory.App"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    StartupUri="MainWindow.xaml">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Themes/Generic.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Controls.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Fonts.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Colors.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/Blue.xaml" />
+                <ResourceDictionary Source="pack://application:,,,/MahApps.Metro;component/Styles/Accents/BaseDark.xaml" />
+                <ResourceDictionary Source="Themes/VS2013/DarkTheme.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <Style x:Key="DynamicMenuItemContainerStyle" TargetType="MenuItem" BasedOn="{StaticResource MetroMenuItem}">
+                <!-- ReSharper disable Xaml.BindingWithoutContextNotResolved -->
+                <Setter Property="Header" Value="{Binding Header}" />
+                <Setter Property="Command" Value="{Binding Command}" />
+                <Setter Property="ItemsSource" Value="{Binding Items}" />
+                <Setter Property="InputGestureText" Value="{Binding InputGesture}" />
+                <!-- ReSharper restore Xaml.BindingWithoutContextNotResolved -->
+            </Style>
+
+            <Style x:Key="DialogButtonStyle" TargetType="Button" BasedOn="{StaticResource {x:Type Button}}">
+                <Setter Property="MinWidth" Value="80" />
+                <Setter Property="Margin" Value="5,0,0,0" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="BorderBrush" Value="#555555" />
+            </Style>
+
+            <Style x:Key="DialogToggleButtonStyle" TargetType="ToggleButton" BasedOn="{StaticResource {x:Type ToggleButton}}">
+                <Setter Property="MinWidth" Value="80" />
+                <Setter Property="Margin" Value="5,0,0,0" />
+                <Setter Property="BorderThickness" Value="1" />
+                <Setter Property="BorderBrush" Value="#555555" />
+            </Style>
+
+            <Style x:Key="DialogButtonPanelStyle" TargetType="StackPanel">
+                <Setter Property="Orientation" Value="Horizontal" />
+                <Setter Property="HorizontalAlignment" Value="Right" />
+                <Setter Property="Margin" Value="5" />
+            </Style>
+
+            <Style x:Key="HiddenButtonStyle" TargetType="Button" BasedOn="{StaticResource DarkMetroWindowButtonStyle}">
+                <Style.Triggers>
+                    <DataTrigger Binding="{Binding IsMouseOver, RelativeSource={RelativeSource Mode=FindAncestor, AncestorType=ListBoxItem}}" Value="False">
+                        <Setter Property="Visibility" Value="Hidden" />
+                    </DataTrigger>
+                </Style.Triggers>
+            </Style>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>
