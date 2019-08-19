@@ -3,17 +3,24 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+             xmlns:sprites="clr-namespace:SpriteFactory.Sprites"
              mc:Ignorable="d" 
              d:DesignWidth="300"
              d:DesignHeight="300" 
-             d:DataContext="{d:DesignInstance local:SpriteEditorViewModel, IsDesignTimeCreatable=False}">
+             d:DataContext="{d:DesignInstance sprites:SpriteEditorViewModel, IsDesignTimeCreatable=False}">
     <StackPanel Margin="16">
         <Label Content="Texture" />
         <DockPanel>
             <Button DockPanel.Dock="Right" Content="..." ToolTip="Select Texture..." Command="{Binding SelectTextureCommand}" MinWidth="32" />
             <TextBox Text="{Binding TextureName, Mode=OneWay}" IsReadOnly="True" />
         </DockPanel>
-        <Label Content="Sprites" />
-        <Button Command="{Binding AutoDetectCommand}" Content="Auto Detect" />
+        <Label Content="Tile Size" />
+        <StackPanel Orientation="Horizontal">
+            <TextBox Text="{Binding TileWidth, UpdateSourceTrigger=PropertyChanged}" MinWidth="50" />
+            <Label Content="x" />
+            <TextBox Text="{Binding TileHeight, UpdateSourceTrigger=PropertyChanged}" MinWidth="50" />
+        </StackPanel>
+        <!--<Label Content="Sprites" />
+        <Button Command="{Binding AutoDetectCommand}" Content="Auto Detect" />-->
     </StackPanel>
 </UserControl>

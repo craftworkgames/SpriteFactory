@@ -5,6 +5,7 @@ using Catel.IoC;
 using Catel.MVVM;
 using Catel.Services;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using SpriteFactory.Assets;
@@ -15,20 +16,25 @@ namespace SpriteFactory.Sprites
     {
         private readonly AssetManager _assetManager;
         private readonly SpriteBatch _spriteBatch;
+        //private Rectangle _autoRectangle;
+        private readonly Texture2D _backgroundTexture;
 
-        public SpriteEditorViewModel(AssetManager assetManager, GraphicsDevice graphicsDevice)
+
+        public SpriteEditorViewModel(ContentManager contentManager, AssetManager assetManager, GraphicsDevice graphicsDevice)
         {
             _assetManager = assetManager;
             _spriteBatch = new SpriteBatch(graphicsDevice);
 
-            _camera = new OrthographicCamera(graphicsDevice);
-            _camera.LookAt(Vector2.Zero);
+            _backgroundTexture = contentManager.Load<Texture2D>("checkered-dark");
+
+            Camera = new OrthographicCamera(graphicsDevice);
+            Camera.LookAt(Vector2.Zero);
 
             SelectTextureCommand = new Command(SelectTexture);
-            AutoDetectCommand = new Command(AutoDetect);
+            //AutoDetectCommand = new Command(AutoDetect);
         }
 
-        private OrthographicCamera _camera;
+        public OrthographicCamera Camera { get; }
 
         public Vector2 Origin => Texture != null ? new Vector2(Texture.Width / 2f, Texture.Height / 2f) : Vector2.Zero;
         public Rectangle BoundingRectangle => Texture?.Bounds ?? Rectangle.Empty;
@@ -70,7 +76,10 @@ namespace SpriteFactory.Sprites
 
         public ICommand SelectTextureCommand { get; }
 
-        public ICommand AutoDetectCommand { get; }
+        public int TileWidth { get; set; }
+        public int TileHeight { get; set; }
+
+        //public ICommand AutoDetectCommand { get; }
 
         private async void SelectTexture()
         {
@@ -81,39 +90,51 @@ namespace SpriteFactory.Sprites
             {
                 TexturePath = openFileService.FileName;
                 Texture = _assetManager.LoadTexture(TexturePath);
+                Camera.LookAt(Texture.Bounds.Center.ToVector2());
             }
         }
 
-        private void AutoDetect()
-        {
-            var data = new Color[Texture.Width * Texture.Height];
-            Texture.GetData(data);
+        //private void AutoDetect()
+        //{
+        //    var data = new Color[Texture.Width * Texture.Height];
+        //    Texture.GetData(data);
 
-            for (var y = 0; y < Texture.Height; y++)
-            {
-                for (var x = 0; x < Texture.Width; x++)
-                {
-                    var color = data[y * Texture.Height + x];
+        //    for (var y = 0; y < Texture.Height; y++)
+        //    {
+        //        for (var x = 0; x < Texture.Width; x++)
+        //        {
+        //            var color = data[y * Texture.Height + x];
 
-                    if (color.A != 0)
-                    {
-                        if(_autoRectangle.IsEmpty)
-                            _autoRectangle = new Rectangle(x, y, 1, 1);
-                    }
-                }
-            }
-        }
-
-        private Rectangle _autoRectangle;
+        //            if (color.A != 0)
+        //            {
+        //                if(_autoRectangle.IsEmpty)
+        //                    _autoRectangle = new Rectangle(x, y, 1, 1);
+        //            }
+        //        }
+        //    }
+        //}
 
         public void Draw()
         {
             if(Texture == null)
                 return;
-            
-            _spriteBatch.Begin(transformMatrix: _camera.GetViewMatrix());
-            _spriteBatch.Draw(Texture, Vector2.Zero, null, Color.White, 0, Origin, Vector2.One, SpriteEffects.None, 0);
-            _spriteBatch.DrawRectangle(_autoRectangle, Color.White);
+
+            var boundingRectangle = BoundingRectangle;
+
+            // background
+            _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap, transformMatrix: Camera.GetViewMatrix());
+            _spriteBatch.Draw(_backgroundTexture, sourceRectangle: boundingRectangle, destinationRectangle: boundingRectangle, color: Color.White);
+            _spriteBatch.Draw(Texture, sourceRectangle: boundingRectangle, destinationRectangle: boundingRectangle, color: Color.White);
+
+            if (TileWidth > 1 && TileHeight > 1)
+            {
+                for (var y = 0; y <= Texture.Height; y += TileHeight)
+                    _spriteBatch.DrawLine(0, y, boundingRectangle.Width, y, Color.White * 0.5f);
+
+                for (var x = 0; x <= Texture.Width; x += TileWidth)
+                    _spriteBatch.DrawLine(x, 0, x, boundingRectangle.Height, Color.White * 0.5f);
+            }
+
             _spriteBatch.End();
         }
     }
