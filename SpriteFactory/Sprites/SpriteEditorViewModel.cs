@@ -9,6 +9,7 @@ using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using MonoGame.Extended;
 using SpriteFactory.Assets;
+using SpriteFactory.MonoGameControls;
 
 namespace SpriteFactory.Sprites
 {
@@ -76,8 +77,9 @@ namespace SpriteFactory.Sprites
 
         public ICommand SelectTextureCommand { get; }
 
-        public int TileWidth { get; set; }
-        public int TileHeight { get; set; }
+        public int TileWidth { get; set; } = 32;
+        public int TileHeight { get; set; } = 32;
+        public Vector2 WorldPosition { get; set; }
 
         //public ICommand AutoDetectCommand { get; }
 
@@ -114,14 +116,18 @@ namespace SpriteFactory.Sprites
         //    }
         //}
 
+        public void OnMouseMove(MouseStateArgs mouseState)
+        {
+            WorldPosition = Camera.ScreenToWorld(mouseState.Position);
+        }
+
         public void Draw()
         {
             if(Texture == null)
                 return;
 
             var boundingRectangle = BoundingRectangle;
-
-            // background
+            
             _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap, transformMatrix: Camera.GetViewMatrix());
             _spriteBatch.Draw(_backgroundTexture, sourceRectangle: boundingRectangle, destinationRectangle: boundingRectangle, color: Color.White);
             _spriteBatch.Draw(Texture, sourceRectangle: boundingRectangle, destinationRectangle: boundingRectangle, color: Color.White);
@@ -133,6 +139,14 @@ namespace SpriteFactory.Sprites
 
                 for (var x = 0; x <= Texture.Width; x += TileWidth)
                     _spriteBatch.DrawLine(x, 0, x, boundingRectangle.Height, Color.White * 0.5f);
+
+                if (boundingRectangle.Contains(WorldPosition))
+                {
+                    var cx = (int)(WorldPosition.X / TileWidth);
+                    var cy = (int)(WorldPosition.Y / TileHeight);
+
+                    _spriteBatch.FillRectangle(cx * TileWidth, cy * TileHeight, TileWidth, TileHeight, Color.CornflowerBlue * 0.5f);
+                }
             }
 
             _spriteBatch.End();

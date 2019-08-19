@@ -107,6 +107,8 @@ namespace SpriteFactory
 
         public override void OnMouseMove(MouseStateArgs mouseState)
         {
+            SpriteEditor.OnMouseMove(mouseState);
+
             //var worldPosition = _camera.ScreenToWorld(mouseState.Position);
             //var previousWorldPosition = _camera.ScreenToWorld(_mousePosition);
             //var mouseDelta = previousWorldPosition - worldPosition;
