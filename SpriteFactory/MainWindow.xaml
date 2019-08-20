@@ -14,7 +14,7 @@
     WindowState="Maximized"
     Width="800"
     Height="480"
-    d:DataContext="{d:DesignInstance local:MainWindowViewModel, IsDesignTimeCreatable=False}">
+    d:DataContext="{d:DesignInstance spriteFactory:MainWindowViewModel, IsDesignTimeCreatable=False}">
 
     <Window.DataContext>
         <spriteFactory:MainWindowViewModel />
@@ -23,15 +23,15 @@
     <DockPanel LastChildFill="True">
         <Menu DockPanel.Dock="Top">
             <MenuItem Header="_File">
-                <MenuItem Header="_New" />
-                <MenuItem Header="_Open..." />
+                <MenuItem Header="_New" Command="{Binding NewCommand}" />
+                <MenuItem Header="_Open..." Command="{Binding OpenCommand}" />
                 <Separator />
-                <MenuItem Header="_Save" />
-                <MenuItem Header="Save _As..." />
+                <MenuItem Header="_Save" Command="{Binding SaveCommand}" />
+                <MenuItem Header="Save _As..." Command="{Binding SaveAsCommand}" />
                 <Separator />
                 <MenuItem Header="E_xit" Click="Exit_OnClick" />
             </MenuItem>
-            <MenuItem Header="_Edit">
+            <!--<MenuItem Header="_Edit">
                 <MenuItem Header="_Undo" />
                 <MenuItem Header="_Redo" />
                 <Separator />
@@ -44,7 +44,7 @@
             </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About Sprite Factory" />
-            </MenuItem>
+            </MenuItem>-->
         </Menu>
 
         <sprites:SpriteEditorView

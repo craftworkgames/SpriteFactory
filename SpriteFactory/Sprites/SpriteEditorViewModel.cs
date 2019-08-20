@@ -68,13 +68,10 @@ namespace SpriteFactory.Sprites
                 {
                     _texture = value;
                     SetPropertyValue(ref _texture, value, nameof(Texture));
-                    OnTextureChanged?.Invoke(value);
                 }
             }
         }
-
-        public Action<Texture2D> OnTextureChanged { get; set; }
-
+        
         public ICommand SelectTextureCommand { get; }
 
         public int TileWidth { get; set; } = 32;

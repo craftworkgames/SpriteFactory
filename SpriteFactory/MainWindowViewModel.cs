@@ -1,23 +1,49 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.IO;
 using System.Windows.Input;
+using Catel.IoC;
+using Catel.MVVM;
+using Catel.Services;
 using Microsoft.Xna.Framework;
-using MonoGame.Extended;
+using Newtonsoft.Json;
+using Newtonsoft.Json.Converters;
+using Newtonsoft.Json.Serialization;
 using SpriteFactory.Assets;
 using SpriteFactory.MonoGameControls;
 using SpriteFactory.Sprites;
-using SpriteFactory.Widgets;
 
 namespace SpriteFactory
 {
-    public class SpriteGroup
+    public enum SpriteMode
     {
-        public List<RectangleF> Boxes { get; } = new List<RectangleF>();
+        Tileset, Spritesheet
+    }
+
+    public interface ISpritesFileContent
+    {
+    }
+
+    public class TilesetContent : ISpritesFileContent
+    {
+        public int TileWidth { get; set; }
+        public int TileHeight { get; set; }
+    }
+
+    public class SpritesFile
+    {
+        public string Texture { get; set; }
+        public SpriteMode Mode { get; set; } = SpriteMode.Tileset;
+        public ISpritesFileContent Content { get; set; }
     }
 
     public class MainWindowViewModel : MonoGameViewModel
     {
         public MainWindowViewModel()
         {
+            NewCommand = new Command(New);
+            OpenCommand = new Command(Open);
+            SaveCommand = new Command(Save);
+            SaveAsCommand = new Command(SaveAs);
         }
 
         public override void Dispose()
@@ -27,14 +53,6 @@ namespace SpriteFactory
         }
 
         private AssetManager _assetManager;
-        //private Vector2 _mousePosition;
-
-        //private Dragger _dragger;
-        private SpriteSheetBox _spriteSheetBox;
-        //private SpriteBox _focusedSpriteBox;
-
-        //private SelectionTool _selectionTool;
-        //private ResizableBox _resizableBox;
 
         public int Width => GraphicsDevice.Viewport.Width;
         public int Height => GraphicsDevice.Viewport.Height;
@@ -46,7 +64,6 @@ namespace SpriteFactory
             private set => SetPropertyValue(ref _spriteEditor, value, nameof(SpriteEditor));
         }
 
-
         private Cursor _cursor;
         public Cursor Cursor
         {
@@ -54,120 +71,97 @@ namespace SpriteFactory
             set => SetPropertyValue(ref _cursor, value, nameof(Cursor));
         }
 
-        public override void OnMouseDown(MouseStateArgs mouseState)
+        public ICommand NewCommand { get; }
+
+        public void New()
         {
-            //var worldPosition = _camera.ScreenToWorld(mouseState.Position);
 
-            //if (mouseState.LeftButton == ButtonState.Pressed)
-            //{
-            //    if (_resizableBox == null || !_resizableBox.TryGrab(worldPosition))
-            //    {
-            //        _selectionTool = new SelectionTool(worldPosition);
-            //    }
-
-
-
-
-            //    //var spriteBox = TrySelectSpriteBox(worldPosition);
-
-            //    //if (spriteBox != null)
-            //    //{
-            //    //    _dragger = new Dragger(spriteBox, worldPosition);
-            //    //    _focusedSpriteBox = spriteBox;
-            //    //}
-            //    //else
-            //    //{
-            //    //    _focusedSpriteBox = null;
-
-            //    //    if (mouseState.LeftButton == ButtonState.Pressed)
-            //    //        _selectionTool = new SelectionTool(worldPosition);
-            //    //}
-
-            //}
         }
 
-        //private SpriteBox TrySelectSpriteBox(Vector2 worldPosition)
-        //{
-        //    if (_spriteSheetBox == null)
-        //        return null;
+        private JsonSerializer CreateJsonSerializer()
+        {
+            var jsonSerializer = new JsonSerializer
+            {
+                Formatting = Formatting.Indented,
+                ContractResolver = new CamelCasePropertyNamesContractResolver(),
+                Converters =
+                {
+                    new StringEnumConverter()
+                }
+            };
+            return jsonSerializer;
+        }
 
-        //    _spriteSheetBox.SpriteBoxes.ForEach(s => s.IsSelected = false);
+        public ICommand OpenCommand { get; }
 
-        //    foreach (var spriteBox in _spriteSheetBox.SpriteBoxes)
-        //    {
-        //        if (spriteBox.BoundingRectangle.Contains(worldPosition))
-        //        {
-        //            spriteBox.IsSelected = true;
-        //            return spriteBox;
-        //        }
-        //    }
+        public async void Open()
+        {
+            var openFileService = DependencyResolver.Resolve<IOpenFileService>();
+            openFileService.Filter = "Sprites (*.sprites)|*.sprites";
 
-        //    return null;
-        //}
+            if (await openFileService.DetermineFileAsync())
+            {
+                var jsonSerializer = CreateJsonSerializer();
+
+                using (var streamReader = new StreamReader(openFileService.FileName))
+                using (var jsonReader = new JsonTextReader(streamReader))
+                {
+                    var spritesFile = jsonSerializer.Deserialize<SpritesFile>(jsonReader);
+                    throw new NotImplementedException();
+                }
+            }
+        }
+
+        public ICommand SaveCommand { get; }
+
+        public void Save()
+        {
+            // TODO: Detect if the file has already been saved?
+            SaveAs();
+        }
+
+        public ICommand SaveAsCommand { get; }
+
+        public async void SaveAs()
+        {
+            var saveFileService = DependencyResolver.Resolve<ISaveFileService>();
+            saveFileService.Filter = "Sprites (*.sprites)|*.sprites";
+            saveFileService.FileName = Path.ChangeExtension(SpriteEditor.TextureName, ".sprites");
+
+            if (await saveFileService.DetermineFileAsync())
+            {
+                var jsonSerializer = CreateJsonSerializer();
+
+                using (var streamWriter = new StreamWriter(saveFileService.FileName))
+                using (var jsonWriter = new JsonTextWriter(streamWriter))
+                {
+                    var spritesFile = new SpritesFile
+                    {
+                        Texture = Catel.IO.Path.GetRelativePath(SpriteEditor.TexturePath, Path.GetDirectoryName(saveFileService.FileName)),
+                        Mode = SpriteMode.Tileset,
+                        Content = new TilesetContent
+                        {
+                            TileWidth = SpriteEditor.TileWidth,
+                            TileHeight = SpriteEditor.TileHeight
+                        }
+                    };
+                    jsonSerializer.Serialize(jsonWriter, spritesFile);
+                }
+            }
+        }
+
+        public override void OnMouseDown(MouseStateArgs mouseState)
+        {
+        }
 
         public override void OnMouseMove(MouseStateArgs mouseState)
         {
             SpriteEditor.OnMouseMove(mouseState);
-
-            //var worldPosition = _camera.ScreenToWorld(mouseState.Position);
-            //var previousWorldPosition = _camera.ScreenToWorld(_mousePosition);
-            //var mouseDelta = previousWorldPosition - worldPosition;
-
-            //if (mouseState.MiddleButton == ButtonState.Pressed)
-            //    _camera.Move(mouseDelta);
-
-            //if (_resizableBox != null)
-            //{
-            //    var handle = _resizableBox.GetResizeHandle(worldPosition);
-            //    Cursor = GetResizeCursor(handle);
-            //}
-            //else
-            //{
-            //    Cursor = null;
-            //}
-
-            //if (mouseState.LeftButton == ButtonState.Pressed)
-            //{
-            //    if (_resizableBox != null && _resizableBox.IsGrabbed)
-            //    {
-            //        _resizableBox.Resize(worldPosition);
-            //    }
-            //    else
-            //    {
-            //        _selectionTool?.OnMouseMove(worldPosition);
-            //    }
-            //    //_dragger?.OnMouseMove(worldPosition);
-
-            //    //if (handle == ResizeHandle.None)
-            //    //    _selectionTool?.OnMouseMove(worldPosition);
-            //    //else
-            //    //    _resizableBox.Resize(worldPosition);
-            //}
-
-
-            //_mousePosition = mouseState.Position;
         }
 
 
         public override void OnMouseUp(MouseStateArgs mouseState)
         {
-            //if (mouseState.LeftButton == ButtonState.Released)
-            //{
-            //    _resizableBox?.Release();
-
-            //    if (_selectionTool != null && !_selectionTool.BoundingRectangle.Size.IsEmpty)
-            //    {
-            //        _resizableBox = new ResizableBox(_selectionTool.BoundingRectangle.ToRectangle());
-            //        _selectionTool = null;
-            //    }
-            //}
-            //if (_selectionTool != null && !_selectionTool.BoundingRectangle.IsEmpty)
-            //{
-            //    _spriteSheetBox?.SpriteBoxes.Add(new SpriteBox(_selectionTool.BoundingRectangle.ToRectangle()));
-            //    _selectionTool = null;
-            //}
-
-            //_dragger = null;
         }
 
         public override void OnMouseWheel(MouseStateArgs args, int delta)
@@ -178,17 +172,9 @@ namespace SpriteFactory
 
         public override void LoadContent()
         {
-            //_resizableBox = new ResizableBox(new Rectangle(-100, -100, 200, 300));
             _assetManager = new AssetManager(GraphicsDevice);
 
-            SpriteEditor = new SpriteEditorViewModel(Content, _assetManager, GraphicsDevice)
-            {
-                OnTextureChanged = texture =>
-                {
-                    _spriteSheetBox?.Dispose();
-                    _spriteSheetBox = new SpriteSheetBox(texture);
-                }
-            };
+            SpriteEditor = new SpriteEditorViewModel(Content, _assetManager, GraphicsDevice);
         }
 
         public override void Update(GameTime gameTime)
@@ -201,37 +187,5 @@ namespace SpriteFactory
 
             SpriteEditor?.Draw();
         }
-
-        //private static Cursor GetResizeCursor(ResizeHandle handle)
-        //{
-        //    switch (handle)
-        //    {
-        //        case ResizeHandle.TopLeft:
-        //            return Cursors.SizeNWSE;
-
-        //        case ResizeHandle.TopRight:
-        //            return Cursors.SizeNESW;
-
-        //        case ResizeHandle.BottomLeft:
-        //            return Cursors.SizeNESW;
-
-        //        case ResizeHandle.BottomRight:
-        //            return Cursors.SizeNWSE;
-
-        //        case ResizeHandle.Left:
-        //        case ResizeHandle.Right:
-        //            return Cursors.SizeWE;
-
-        //        case ResizeHandle.Top:
-        //        case ResizeHandle.Bottom:
-        //            return Cursors.SizeNS;
-        //        case ResizeHandle.Centre:
-        //            return Cursors.SizeAll;
-        //        case ResizeHandle.None:
-        //            return null;
-        //        default:
-        //            throw new ArgumentOutOfRangeException(nameof(handle), handle, null);
-        //    }
-        //}
     }
 }
