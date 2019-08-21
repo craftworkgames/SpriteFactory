@@ -17,10 +17,8 @@ namespace SpriteFactory.Sprites
     {
         private readonly AssetManager _assetManager;
         private readonly SpriteBatch _spriteBatch;
-        //private Rectangle _autoRectangle;
         private readonly Texture2D _backgroundTexture;
-
-
+        
         public SpriteEditorViewModel(ContentManager contentManager, AssetManager assetManager, GraphicsDevice graphicsDevice)
         {
             _assetManager = assetManager;
@@ -32,7 +30,6 @@ namespace SpriteFactory.Sprites
             Camera.LookAt(Vector2.Zero);
 
             SelectTextureCommand = new Command(SelectTexture);
-            //AutoDetectCommand = new Command(AutoDetect);
         }
 
         public OrthographicCamera Camera { get; }
@@ -47,7 +44,10 @@ namespace SpriteFactory.Sprites
             private set
             {
                 if (SetPropertyValue(ref _texturePath, value, nameof(TexturePath)))
+                {
                     TextureName = Path.GetFileName(_texturePath);
+                    Texture = _assetManager.LoadTexture(TexturePath);
+                }
             }
         }
         
@@ -64,33 +64,36 @@ namespace SpriteFactory.Sprites
             get => _texture;
             private set
             {
-                if (_texture != value)
-                {
-                    _texture = value;
-                    SetPropertyValue(ref _texture, value, nameof(Texture));
-                }
+                if (SetPropertyValue(ref _texture, value, nameof(Texture)))
+                    Camera.LookAt(Texture.Bounds.Center.ToVector2());
             }
         }
         
         public ICommand SelectTextureCommand { get; }
 
-        public int TileWidth { get; set; } = 32;
-        public int TileHeight { get; set; } = 32;
+        private int _tileWidth = 32;
+        public int TileWidth
+        {
+            get => _tileWidth;
+            set => SetPropertyValue(ref _tileWidth, value, nameof(TileWidth));
+        }
+
+        private int _tileHeight = 32;
+        public int TileHeight
+        {
+            get => _tileHeight;
+            set => SetPropertyValue(ref _tileHeight, value, nameof(TileHeight));
+        }
+
         public Vector2 WorldPosition { get; set; }
-
-        //public ICommand AutoDetectCommand { get; }
-
+        
         private async void SelectTexture()
         {
             var openFileService = DependencyResolver.Resolve<IOpenFileService>();
             openFileService.Filter = "PNG Files (*.png)|*.png|All Files (*.*)|*.*";
 
             if (await openFileService.DetermineFileAsync())
-            {
                 TexturePath = openFileService.FileName;
-                Texture = _assetManager.LoadTexture(TexturePath);
-                Camera.LookAt(Texture.Bounds.Center.ToVector2());
-            }
         }
 
         //private void AutoDetect()
@@ -147,6 +150,31 @@ namespace SpriteFactory.Sprites
             }
 
             _spriteBatch.End();
+        }
+
+        public SpritesFile GetData(string filePath)
+        {
+            return new SpritesFile
+            {
+                Texture = Catel.IO.Path.GetRelativePath(TexturePath, Path.GetDirectoryName(filePath)),
+                Mode = SpriteMode.Tileset,
+                Content = new TilesetContent
+                {
+                    TileWidth = TileWidth,
+                    TileHeight = TileHeight
+                }
+            };
+        }
+
+        public void SetData(string filePath, SpritesFile data)
+        {
+            var directory = Path.GetDirectoryName(filePath);
+            // ReSharper disable once AssignNullToNotNullAttribute
+            var texturePath = Path.Combine(directory, data.Texture);
+
+            TexturePath = texturePath;
+            TileWidth = data.Content.TileWidth;
+            TileHeight = data.Content.TileHeight;
         }
     }
 }

@@ -1,5 +1,4 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Windows.Input;
 using Catel.IoC;
 using Catel.MVVM;
@@ -18,12 +17,8 @@ namespace SpriteFactory
     {
         Tileset, Spritesheet
     }
-
-    public interface ISpritesFileContent
-    {
-    }
-
-    public class TilesetContent : ISpritesFileContent
+    
+    public class TilesetContent
     {
         public int TileWidth { get; set; }
         public int TileHeight { get; set; }
@@ -33,7 +28,7 @@ namespace SpriteFactory
     {
         public string Texture { get; set; }
         public SpriteMode Mode { get; set; } = SpriteMode.Tileset;
-        public ISpritesFileContent Content { get; set; }
+        public TilesetContent Content { get; set; }
     }
 
     public class MainWindowViewModel : MonoGameViewModel
@@ -102,12 +97,13 @@ namespace SpriteFactory
             if (await openFileService.DetermineFileAsync())
             {
                 var jsonSerializer = CreateJsonSerializer();
+                var filePath = openFileService.FileName;
 
-                using (var streamReader = new StreamReader(openFileService.FileName))
+                using (var streamReader = new StreamReader(filePath))
                 using (var jsonReader = new JsonTextReader(streamReader))
                 {
-                    var spritesFile = jsonSerializer.Deserialize<SpritesFile>(jsonReader);
-                    throw new NotImplementedException();
+                    var data = jsonSerializer.Deserialize<SpritesFile>(jsonReader);
+                    SpriteEditor.SetData(filePath, data);
                 }
             }
         }
@@ -131,21 +127,13 @@ namespace SpriteFactory
             if (await saveFileService.DetermineFileAsync())
             {
                 var jsonSerializer = CreateJsonSerializer();
+                var filePath = saveFileService.FileName;
 
-                using (var streamWriter = new StreamWriter(saveFileService.FileName))
+                using (var streamWriter = new StreamWriter(filePath))
                 using (var jsonWriter = new JsonTextWriter(streamWriter))
                 {
-                    var spritesFile = new SpritesFile
-                    {
-                        Texture = Catel.IO.Path.GetRelativePath(SpriteEditor.TexturePath, Path.GetDirectoryName(saveFileService.FileName)),
-                        Mode = SpriteMode.Tileset,
-                        Content = new TilesetContent
-                        {
-                            TileWidth = SpriteEditor.TileWidth,
-                            TileHeight = SpriteEditor.TileHeight
-                        }
-                    };
-                    jsonSerializer.Serialize(jsonWriter, spritesFile);
+                    var data = SpriteEditor.GetData(filePath);
+                    jsonSerializer.Serialize(jsonWriter, data);
                 }
             }
         }

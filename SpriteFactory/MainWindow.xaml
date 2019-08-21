@@ -10,6 +10,7 @@
     xmlns:monoGameControls="clr-namespace:SpriteFactory.MonoGameControls"
     mc:Ignorable="d"
     Title="Sprite Factory" 
+    TitleCharacterCasing="Normal"
     WindowStartupLocation="CenterScreen"
     WindowState="Maximized"
     Width="800"
