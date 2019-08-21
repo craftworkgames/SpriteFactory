@@ -21,14 +21,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Remove="GameObjects\GameObjectView.xaml" />
     <None Remove="Sprites\SpriteEditorView.xaml" />
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="GameObjects\GameObjectView.xaml.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Update="Sprites\SpriteEditorView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>

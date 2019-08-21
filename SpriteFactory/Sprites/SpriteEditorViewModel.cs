@@ -7,6 +7,7 @@ using Catel.Services;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
+using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
 using SpriteFactory.Assets;
 using SpriteFactory.MonoGameControls;
@@ -116,9 +117,19 @@ namespace SpriteFactory.Sprites
         //    }
         //}
 
+        private Vector2 _previousMousePosition;
+
         public void OnMouseMove(MouseStateArgs mouseState)
         {
             WorldPosition = Camera.ScreenToWorld(mouseState.Position);
+
+            var previousWorldPosition = Camera.ScreenToWorld(_previousMousePosition);
+            var mouseDelta = previousWorldPosition - WorldPosition;
+
+            if (mouseState.RightButton == ButtonState.Pressed)
+                Camera.Move(mouseDelta);
+
+            _previousMousePosition = mouseState.Position;
         }
 
         public void Draw()

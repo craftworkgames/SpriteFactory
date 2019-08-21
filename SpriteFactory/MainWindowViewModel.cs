@@ -13,24 +13,6 @@ using SpriteFactory.Sprites;
 
 namespace SpriteFactory
 {
-    public enum SpriteMode
-    {
-        Tileset, Spritesheet
-    }
-    
-    public class TilesetContent
-    {
-        public int TileWidth { get; set; }
-        public int TileHeight { get; set; }
-    }
-
-    public class SpritesFile
-    {
-        public string Texture { get; set; }
-        public SpriteMode Mode { get; set; } = SpriteMode.Tileset;
-        public TilesetContent Content { get; set; }
-    }
-
     public class MainWindowViewModel : MonoGameViewModel
     {
         public MainWindowViewModel()
@@ -73,7 +55,7 @@ namespace SpriteFactory
 
         }
 
-        private JsonSerializer CreateJsonSerializer()
+        private static JsonSerializer CreateJsonSerializer()
         {
             var jsonSerializer = new JsonSerializer
             {
@@ -87,12 +69,18 @@ namespace SpriteFactory
             return jsonSerializer;
         }
 
+        private T OpenFileDialog<T>() where T : IFileSupport
+        {
+            var service = DependencyResolver.Resolve<T>();
+            service.Filter = "Sprites (*.sprites)|*.sprites";
+            return service;
+        }
+
         public ICommand OpenCommand { get; }
 
         public async void Open()
         {
-            var openFileService = DependencyResolver.Resolve<IOpenFileService>();
-            openFileService.Filter = "Sprites (*.sprites)|*.sprites";
+            var openFileService = OpenFileDialog<IOpenFileService>();
 
             if (await openFileService.DetermineFileAsync())
             {
@@ -120,8 +108,7 @@ namespace SpriteFactory
 
         public async void SaveAs()
         {
-            var saveFileService = DependencyResolver.Resolve<ISaveFileService>();
-            saveFileService.Filter = "Sprites (*.sprites)|*.sprites";
+            var saveFileService = OpenFileDialog<ISaveFileService>();
             saveFileService.FileName = Path.ChangeExtension(SpriteEditor.TextureName, ".sprites");
 
             if (await saveFileService.DetermineFileAsync())
