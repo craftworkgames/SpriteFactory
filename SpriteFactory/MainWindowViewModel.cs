@@ -127,6 +127,7 @@ namespace SpriteFactory
 
         public override void OnMouseDown(MouseStateArgs mouseState)
         {
+            SpriteEditor.OnMouseDown(mouseState);
         }
 
         public override void OnMouseMove(MouseStateArgs mouseState)

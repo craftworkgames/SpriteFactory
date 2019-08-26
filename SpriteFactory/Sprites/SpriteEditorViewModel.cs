@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.ObjectModel;
 using System.IO;
+using System.Linq;
 using System.Windows.Input;
 using Catel.IoC;
 using Catel.MVVM;
@@ -31,6 +33,9 @@ namespace SpriteFactory.Sprites
             Camera.LookAt(Vector2.Zero);
 
             SelectTextureCommand = new Command(SelectTexture);
+
+            AddAnimationCommand = new Command(AddAnimation);
+            RemoveAnimationCommand = new Command(RemoveAnimation, () => SelectedAnimation != null);
         }
 
         public OrthographicCamera Camera { get; }
@@ -87,7 +92,32 @@ namespace SpriteFactory.Sprites
         }
 
         public Vector2 WorldPosition { get; set; }
-        
+
+        public ObservableCollection<SpriteKeyFrameAnimation> Animations { get; } = new ObservableCollection<SpriteKeyFrameAnimation>();
+
+        private SpriteKeyFrameAnimation _selectedAnimation;
+        public SpriteKeyFrameAnimation SelectedAnimation
+        {
+            get => _selectedAnimation;
+            set => SetPropertyValue(ref _selectedAnimation, value, nameof(SelectedAnimation));
+        }
+
+        public ICommand AddAnimationCommand { get; }
+        public ICommand RemoveAnimationCommand { get; }
+
+        private void AddAnimation()
+        {
+            var animation = new SpriteKeyFrameAnimation {Name = $"animation{Animations.Count}"};
+            Animations.Add(animation);
+            SelectedAnimation = animation;
+        }
+
+        private void RemoveAnimation()
+        {
+            if (SelectedAnimation != null)
+                Animations.Remove(SelectedAnimation);
+        }
+
         private async void SelectTexture()
         {
             var openFileService = DependencyResolver.Resolve<IOpenFileService>();
@@ -118,6 +148,16 @@ namespace SpriteFactory.Sprites
         //}
 
         private Vector2 _previousMousePosition;
+        
+        public void OnMouseDown(MouseStateArgs mouseState)
+        {
+            var columns = Texture.Width / TileWidth;
+            var cx = (int)(WorldPosition.X / TileWidth);
+            var cy = (int)(WorldPosition.Y / TileHeight);
+            var frameIndex = cy * columns + cx;
+
+            SelectedAnimation.KeyFrames.Add(frameIndex);
+        }
 
         public void OnMouseMove(MouseStateArgs mouseState)
         {
@@ -131,6 +171,9 @@ namespace SpriteFactory.Sprites
 
             _previousMousePosition = mouseState.Position;
         }
+
+        private int _frameIndex;
+        private int _nextFrameHackCounter;
 
         public void Draw()
         {
@@ -159,8 +202,34 @@ namespace SpriteFactory.Sprites
                     _spriteBatch.FillRectangle(cx * TileWidth, cy * TileHeight, TileWidth, TileHeight, Color.CornflowerBlue * 0.5f);
                 }
             }
-
+            
             _spriteBatch.End();
+
+            if (SelectedAnimation != null)
+            {
+                if (SelectedAnimation.KeyFrames.Any())
+                {
+                    _nextFrameHackCounter++;
+
+                    if (_nextFrameHackCounter >= 10)
+                    {
+                        _frameIndex++;
+                        _nextFrameHackCounter = 0;
+                    }
+
+                    if (_frameIndex >= SelectedAnimation.KeyFrames.Count)
+                        _frameIndex = 0;
+
+                    var frame = SelectedAnimation.KeyFrames[_frameIndex];
+                    var sourceRectangle = new Rectangle(frame * TileWidth, 0, TileWidth, TileHeight);
+                    var destinationRectangle = new Rectangle(0, 0, TileWidth, TileHeight);
+
+                    _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap, transformMatrix: Matrix.CreateScale(8));
+                    _spriteBatch.Draw(Texture, destinationRectangle, sourceRectangle, Color.White);
+                    _spriteBatch.End();
+                }
+            }
+
         }
 
         public SpritesFile GetData(string filePath)

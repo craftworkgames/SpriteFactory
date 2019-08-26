@@ -6,7 +6,7 @@
              xmlns:sprites="clr-namespace:SpriteFactory.Sprites"
              mc:Ignorable="d" 
              d:DesignWidth="300"
-             d:DesignHeight="300" 
+             d:DesignHeight="600" 
              d:DataContext="{d:DesignInstance sprites:SpriteEditorViewModel, IsDesignTimeCreatable=False}">
     <StackPanel Margin="16">
         <Label Content="Texture" />
@@ -20,7 +20,13 @@
             <Label Content="x" />
             <TextBox Text="{Binding TileHeight, UpdateSourceTrigger=PropertyChanged}" MinWidth="50" />
         </StackPanel>
-        <!--<Label Content="Sprites" />
-        <Button Command="{Binding AutoDetectCommand}" Content="Auto Detect" />-->
+        <Label Content="Animations" />
+        <StackPanel Orientation="Horizontal">
+            <Button Content="Add" Command="{Binding AddAnimationCommand}" />
+            <Button Content="Remove" Command="{Binding RemoveAnimationCommand}" />
+        </StackPanel>
+        <ListBox ItemsSource="{Binding Animations}" SelectedItem="{Binding SelectedAnimation}" BorderThickness="1" MinHeight="200" />
+        <Label Content="Key Frames" />
+        <ListBox DataContext="{Binding SelectedAnimation}" ItemsSource="{Binding KeyFrames}" BorderThickness="1" MinHeight="200" />
     </StackPanel>
 </UserControl>
