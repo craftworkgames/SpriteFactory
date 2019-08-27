@@ -4,6 +4,7 @@ using Catel.IoC;
 using Catel.MVVM;
 using Catel.Services;
 using Microsoft.Xna.Framework;
+using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;

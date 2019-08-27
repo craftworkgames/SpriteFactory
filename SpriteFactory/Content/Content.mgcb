@@ -37,6 +37,13 @@
 /processorParam:TextureFormat=Color
 /build:checkered-light.png
 
+#begin default.spritefont
+/importer:FontDescriptionImporter
+/processor:FontDescriptionProcessor
+/processorParam:PremultiplyAlpha=True
+/processorParam:TextureFormat=Compressed
+/build:default.spritefont
+
 #begin monogame-logo.png
 /importer:TextureImporter
 /processor:TextureProcessor

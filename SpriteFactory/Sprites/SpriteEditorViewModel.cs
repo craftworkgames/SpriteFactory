@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Input;
@@ -21,13 +20,16 @@ namespace SpriteFactory.Sprites
         private readonly AssetManager _assetManager;
         private readonly SpriteBatch _spriteBatch;
         private readonly Texture2D _backgroundTexture;
-        
+        private readonly SpriteFont _spriteFont;
+
         public SpriteEditorViewModel(ContentManager contentManager, AssetManager assetManager, GraphicsDevice graphicsDevice)
         {
             _assetManager = assetManager;
             _spriteBatch = new SpriteBatch(graphicsDevice);
 
             _backgroundTexture = contentManager.Load<Texture2D>("checkered-dark");
+
+            _spriteFont = contentManager.Load<SpriteFont>("default");
 
             Camera = new OrthographicCamera(graphicsDevice);
             Camera.LookAt(Vector2.Zero);
@@ -151,12 +153,31 @@ namespace SpriteFactory.Sprites
         
         public void OnMouseDown(MouseStateArgs mouseState)
         {
+            var frameIndex = GetFrameIndex();
+
+            if(frameIndex.HasValue)
+                SelectedAnimation?.KeyFrames.Add(frameIndex.Value);
+        }
+
+        private int? GetFrameIndex()
+        {
+            if (!Texture.Bounds.Contains(WorldPosition))
+                return null;
+
             var columns = Texture.Width / TileWidth;
             var cx = (int)(WorldPosition.X / TileWidth);
             var cy = (int)(WorldPosition.Y / TileHeight);
             var frameIndex = cy * columns + cx;
 
-            SelectedAnimation.KeyFrames.Add(frameIndex);
+            return frameIndex;
+        }
+
+        private Rectangle GetFrameRectangle(int frame)
+        {
+            var columns = Texture.Width / TileWidth;
+            var cy = frame / columns;
+            var cx = frame - cy * columns;
+            return new Rectangle(cx * TileWidth, cy * TileHeight, TileWidth, TileHeight);
         }
 
         public void OnMouseMove(MouseStateArgs mouseState)
@@ -221,7 +242,7 @@ namespace SpriteFactory.Sprites
                         _frameIndex = 0;
 
                     var frame = SelectedAnimation.KeyFrames[_frameIndex];
-                    var sourceRectangle = new Rectangle(frame * TileWidth, 0, TileWidth, TileHeight);
+                    var sourceRectangle = GetFrameRectangle(frame);
                     var destinationRectangle = new Rectangle(0, 0, TileWidth, TileHeight);
 
                     _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap, transformMatrix: Matrix.CreateScale(8));
@@ -230,6 +251,11 @@ namespace SpriteFactory.Sprites
                 }
             }
 
+            _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
+            var frameIndex = GetFrameIndex();
+            var frameRectangle = frameIndex.HasValue ? GetFrameRectangle(frameIndex.Value) : Rectangle.Empty;
+            _spriteBatch.DrawString(_spriteFont, $"{frameIndex}: {frameRectangle}", Vector2.Zero, Color.White);
+            _spriteBatch.End();
         }
 
         public SpritesFile GetData(string filePath)
