@@ -4,11 +4,9 @@ using Catel.IoC;
 using Catel.MVVM;
 using Catel.Services;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Graphics;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
-using SpriteFactory.Assets;
 using SpriteFactory.MonoGameControls;
 using SpriteFactory.Sprites;
 
@@ -24,13 +22,6 @@ namespace SpriteFactory
             SaveAsCommand = new Command(SaveAs);
         }
 
-        public override void Dispose()
-        {
-            _assetManager?.Dispose();
-            base.Dispose();
-        }
-
-        private AssetManager _assetManager;
 
         public int Width => GraphicsDevice.Viewport.Width;
         public int Height => GraphicsDevice.Viewport.Height;
@@ -149,9 +140,7 @@ namespace SpriteFactory
 
         public override void LoadContent()
         {
-            _assetManager = new AssetManager(GraphicsDevice);
-
-            SpriteEditor = new SpriteEditorViewModel(Content, _assetManager, GraphicsDevice);
+            SpriteEditor = new SpriteEditorViewModel(Content,  GraphicsDevice);
         }
 
         public override void Update(GameTime gameTime)

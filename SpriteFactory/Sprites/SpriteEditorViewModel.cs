@@ -6,29 +6,26 @@ using Catel.IoC;
 using Catel.MVVM;
 using Catel.Services;
 using Microsoft.Xna.Framework;
-using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
-using SpriteFactory.Assets;
 using SpriteFactory.MonoGameControls;
 
 namespace SpriteFactory.Sprites
 {
     public class SpriteEditorViewModel : ViewModel
     {
-        private readonly AssetManager _assetManager;
+        private readonly ContentManagerExtended _contentManager;
         private readonly SpriteBatch _spriteBatch;
         private readonly Texture2D _backgroundTexture;
         private readonly SpriteFont _spriteFont;
 
-        public SpriteEditorViewModel(ContentManager contentManager, AssetManager assetManager, GraphicsDevice graphicsDevice)
+        public SpriteEditorViewModel(ContentManagerExtended contentManager, GraphicsDevice graphicsDevice)
         {
-            _assetManager = assetManager;
+            _contentManager = contentManager;
             _spriteBatch = new SpriteBatch(graphicsDevice);
 
             _backgroundTexture = contentManager.Load<Texture2D>("checkered-dark");
-
             _spriteFont = contentManager.Load<SpriteFont>("default");
 
             Camera = new OrthographicCamera(graphicsDevice);
@@ -54,7 +51,7 @@ namespace SpriteFactory.Sprites
                 if (SetPropertyValue(ref _texturePath, value, nameof(TexturePath)))
                 {
                     TextureName = Path.GetFileName(_texturePath);
-                    Texture = _assetManager.LoadTexture(TexturePath);
+                    Texture = _contentManager.LoadRaw<Texture2D>(TexturePath);
                 }
             }
         }
@@ -117,7 +114,11 @@ namespace SpriteFactory.Sprites
         private void RemoveAnimation()
         {
             if (SelectedAnimation != null)
+            {
+                var index = Animations.IndexOf(SelectedAnimation);
                 Animations.Remove(SelectedAnimation);
+                SelectedAnimation = index >= Animations.Count ? Animations.LastOrDefault() : Animations[index];
+            }
         }
 
         private async void SelectTexture()

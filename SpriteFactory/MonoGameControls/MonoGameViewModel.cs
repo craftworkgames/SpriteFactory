@@ -44,13 +44,13 @@ namespace SpriteFactory.MonoGameControls
         public IGraphicsDeviceService GraphicsDeviceService { get; set; }
         protected GraphicsDevice GraphicsDevice => GraphicsDeviceService?.GraphicsDevice;
         protected MonoGameServiceProvider Services { get; private set; }
-        protected ContentManager Content { get; set; }
+        protected ContentManagerExtended Content { get; set; }
 
         public virtual void Initialize()
         {
             Services = new MonoGameServiceProvider();
             Services.AddService(GraphicsDeviceService);
-            Content = new ContentManager(Services) { RootDirectory = "Content" };
+            Content = new ContentManagerExtended(Services);
         }
 
         public virtual void LoadContent() { }
