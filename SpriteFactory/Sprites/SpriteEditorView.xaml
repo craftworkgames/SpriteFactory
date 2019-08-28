@@ -9,23 +9,29 @@
              d:DesignHeight="600" 
              d:DataContext="{d:DesignInstance sprites:SpriteEditorViewModel, IsDesignTimeCreatable=False}">
     <StackPanel Margin="16">
+        <Label Content="Preview Zoom" />
+        <ComboBox ItemsSource="{Binding PreviewZoomOptions}" SelectedItem="{Binding SelectedPreviewZoom}" />
+
         <Label Content="Texture" />
         <DockPanel>
             <Button DockPanel.Dock="Right" Content="..." ToolTip="Select Texture..." Command="{Binding SelectTextureCommand}" MinWidth="32" />
             <TextBox Text="{Binding TextureName, Mode=OneWay}" IsReadOnly="True" />
         </DockPanel>
+
         <Label Content="Tile Size" />
         <StackPanel Orientation="Horizontal">
             <TextBox Text="{Binding TileWidth, UpdateSourceTrigger=PropertyChanged}" MinWidth="50" />
             <Label Content="x" />
             <TextBox Text="{Binding TileHeight, UpdateSourceTrigger=PropertyChanged}" MinWidth="50" />
         </StackPanel>
+
         <Label Content="Animations" />
         <StackPanel Orientation="Horizontal">
             <Button Content="Add" Command="{Binding AddAnimationCommand}" />
             <Button Content="Remove" Command="{Binding RemoveAnimationCommand}" />
         </StackPanel>
         <ListBox ItemsSource="{Binding Animations}" SelectedItem="{Binding SelectedAnimation}" BorderThickness="1" MinHeight="200" />
+
         <Label Content="Key Frames" />
         <ListBox DataContext="{Binding SelectedAnimation}" ItemsSource="{Binding KeyFrames}" BorderThickness="1" MinHeight="200" />
     </StackPanel>

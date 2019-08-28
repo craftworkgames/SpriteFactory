@@ -16,6 +16,7 @@ namespace SpriteFactory.Sprites
     public class SpriteEditorViewModel : ViewModel
     {
         private readonly ContentManagerExtended _contentManager;
+        private readonly GraphicsDevice _graphicsDevice;
         private readonly SpriteBatch _spriteBatch;
         private readonly Texture2D _backgroundTexture;
         private readonly SpriteFont _spriteFont;
@@ -23,6 +24,7 @@ namespace SpriteFactory.Sprites
         public SpriteEditorViewModel(ContentManagerExtended contentManager, GraphicsDevice graphicsDevice)
         {
             _contentManager = contentManager;
+            _graphicsDevice = graphicsDevice;
             _spriteBatch = new SpriteBatch(graphicsDevice);
 
             _backgroundTexture = contentManager.Load<Texture2D>("checkered-dark");
@@ -35,12 +37,29 @@ namespace SpriteFactory.Sprites
 
             AddAnimationCommand = new Command(AddAnimation);
             RemoveAnimationCommand = new Command(RemoveAnimation, () => SelectedAnimation != null);
+
+            SelectedPreviewZoom = PreviewZoomOptions.LastOrDefault();
         }
 
         public OrthographicCamera Camera { get; }
 
+        public ZoomOptionViewModel[] PreviewZoomOptions { get; } =
+        {
+            new ZoomOptionViewModel(1),
+            new ZoomOptionViewModel(2),
+            new ZoomOptionViewModel(4),
+            new ZoomOptionViewModel(8)
+        };
+
+        private ZoomOptionViewModel _selectedPreviewZoom;
+        public ZoomOptionViewModel SelectedPreviewZoom
+        {
+            get => _selectedPreviewZoom;
+            set => SetPropertyValue(ref _selectedPreviewZoom, value, nameof(SelectedPreviewZoom));
+        }
+
         public Vector2 Origin => Texture != null ? new Vector2(Texture.Width / 2f, Texture.Height / 2f) : Vector2.Zero;
-        public Rectangle BoundingRectangle => Texture?.Bounds ?? Rectangle.Empty;
+        public Rectangle TextureBounds => Texture?.Bounds ?? Rectangle.Empty;
 
         private string _texturePath;
         public string TexturePath
@@ -154,10 +173,14 @@ namespace SpriteFactory.Sprites
         
         public void OnMouseDown(MouseStateArgs mouseState)
         {
-            var frameIndex = GetFrameIndex();
+            if (mouseState.LeftButton == ButtonState.Pressed)
+            {
+                AddAnimation();
+                var frameIndex = GetFrameIndex();
 
-            if(frameIndex.HasValue)
-                SelectedAnimation?.KeyFrames.Add(frameIndex.Value);
+                if (frameIndex.HasValue)
+                    SelectedAnimation?.KeyFrames.Add(frameIndex.Value);
+            }
         }
 
         private int? GetFrameIndex()
@@ -184,12 +207,20 @@ namespace SpriteFactory.Sprites
         public void OnMouseMove(MouseStateArgs mouseState)
         {
             WorldPosition = Camera.ScreenToWorld(mouseState.Position);
-
+            
             var previousWorldPosition = Camera.ScreenToWorld(_previousMousePosition);
             var mouseDelta = previousWorldPosition - WorldPosition;
 
             if (mouseState.RightButton == ButtonState.Pressed)
                 Camera.Move(mouseDelta);
+
+            if (mouseState.LeftButton == ButtonState.Pressed && SelectedAnimation != null)
+            {
+                var frameIndex = GetFrameIndex();
+
+                if (frameIndex.HasValue && !SelectedAnimation.KeyFrames.Contains(frameIndex.Value))
+                    SelectedAnimation?.KeyFrames.Add(frameIndex.Value);
+            }
 
             _previousMousePosition = mouseState.Position;
         }
@@ -202,12 +233,24 @@ namespace SpriteFactory.Sprites
             if(Texture == null)
                 return;
 
-            var boundingRectangle = BoundingRectangle;
-            
+            // main texture
+            var boundingRectangle = TextureBounds;
+
             _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap, transformMatrix: Camera.GetViewMatrix());
             _spriteBatch.Draw(_backgroundTexture, sourceRectangle: boundingRectangle, destinationRectangle: boundingRectangle, color: Color.White);
-            _spriteBatch.Draw(Texture, sourceRectangle: boundingRectangle, destinationRectangle: boundingRectangle, color: Color.White);
 
+            if (SelectedAnimation != null)
+            {
+                foreach (var keyFrame in SelectedAnimation.KeyFrames)
+                {
+                    var keyFrameRectangle = GetFrameRectangle(keyFrame);
+                    _spriteBatch.FillRectangle(keyFrameRectangle, Color.CornflowerBlue * 0.5f);
+                }
+            }
+
+            _spriteBatch.Draw(Texture, sourceRectangle: boundingRectangle, destinationRectangle: boundingRectangle, color: Color.White);
+            
+            // highlighter
             if (TileWidth > 1 && TileHeight > 1)
             {
                 for (var y = 0; y <= Texture.Height; y += TileHeight)
@@ -227,34 +270,35 @@ namespace SpriteFactory.Sprites
             
             _spriteBatch.End();
 
-            if (SelectedAnimation != null)
+            // animation preview
+            if (SelectedAnimation != null && SelectedAnimation.KeyFrames.Any())
             {
-                if (SelectedAnimation.KeyFrames.Any())
+                _nextFrameHackCounter++;
+
+                if (_nextFrameHackCounter >= 10)
                 {
-                    _nextFrameHackCounter++;
-
-                    if (_nextFrameHackCounter >= 10)
-                    {
-                        _frameIndex++;
-                        _nextFrameHackCounter = 0;
-                    }
-
-                    if (_frameIndex >= SelectedAnimation.KeyFrames.Count)
-                        _frameIndex = 0;
-
-                    var frame = SelectedAnimation.KeyFrames[_frameIndex];
-                    var sourceRectangle = GetFrameRectangle(frame);
-                    var destinationRectangle = new Rectangle(0, 0, TileWidth, TileHeight);
-
-                    _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap, transformMatrix: Matrix.CreateScale(8));
-                    _spriteBatch.Draw(Texture, destinationRectangle, sourceRectangle, Color.White);
-                    _spriteBatch.End();
+                    _frameIndex++;
+                    _nextFrameHackCounter = 0;
                 }
+
+                if (_frameIndex >= SelectedAnimation.KeyFrames.Count)
+                    _frameIndex = 0;
+
+                var previewZoom = SelectedPreviewZoom.Value;
+                var frame = SelectedAnimation.KeyFrames[_frameIndex];
+                var sourceRectangle = GetFrameRectangle(frame);
+                var destinationRectangle = new Rectangle(_graphicsDevice.Viewport.Width - TileWidth * previewZoom, 0, TileWidth * previewZoom, TileHeight * previewZoom);
+
+                _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
+                _spriteBatch.Draw(_backgroundTexture, destinationRectangle, null, Color.White);
+                _spriteBatch.Draw(Texture, destinationRectangle, sourceRectangle, Color.White);
+                _spriteBatch.End();
             }
 
-            _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
+            // debug text
             var frameIndex = GetFrameIndex();
             var frameRectangle = frameIndex.HasValue ? GetFrameRectangle(frameIndex.Value) : Rectangle.Empty;
+            _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
             _spriteBatch.DrawString(_spriteFont, $"{frameIndex}: {frameRectangle}", Vector2.Zero, Color.White);
             _spriteBatch.End();
         }
