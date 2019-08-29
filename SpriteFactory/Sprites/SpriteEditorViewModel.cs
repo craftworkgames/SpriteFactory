@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Windows.Input;
+using Catel.Collections;
 using Catel.IoC;
 using Catel.MVVM;
 using Catel.Services;
@@ -313,7 +314,8 @@ namespace SpriteFactory.Sprites
                 {
                     TileWidth = TileWidth,
                     TileHeight = TileHeight
-                }
+                },
+                Animations = Animations.ToList()
             };
         }
 
@@ -326,6 +328,8 @@ namespace SpriteFactory.Sprites
             TexturePath = texturePath;
             TileWidth = data.Content.TileWidth;
             TileHeight = data.Content.TileHeight;
+            Animations.Clear();
+            Animations.AddRange(data.Animations);
         }
     }
 }

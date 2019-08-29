@@ -4,6 +4,7 @@
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:sprites="clr-namespace:SpriteFactory.Sprites"
+             xmlns:controls="clr-namespace:SpriteFactory.Controls"
              mc:Ignorable="d" 
              d:DesignWidth="300"
              d:DesignHeight="600" 
@@ -30,7 +31,13 @@
             <Button Content="Add" Command="{Binding AddAnimationCommand}" />
             <Button Content="Remove" Command="{Binding RemoveAnimationCommand}" />
         </StackPanel>
-        <ListBox ItemsSource="{Binding Animations}" SelectedItem="{Binding SelectedAnimation}" BorderThickness="1" MinHeight="200" />
+        <ListBox ItemsSource="{Binding Animations}" SelectedItem="{Binding SelectedAnimation}" BorderThickness="1" MinHeight="200">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="sprites:SpriteKeyFrameAnimation">
+                    <controls:EditableTextBlock Text="{Binding Name}" />
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
 
         <Label Content="Key Frames" />
         <ListBox DataContext="{Binding SelectedAnimation}" ItemsSource="{Binding KeyFrames}" BorderThickness="1" MinHeight="200" />

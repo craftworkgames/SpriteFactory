@@ -7,6 +7,7 @@ using Microsoft.Xna.Framework;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
+using SpriteFactory.Json;
 using SpriteFactory.MonoGameControls;
 using SpriteFactory.Sprites;
 
@@ -55,7 +56,8 @@ namespace SpriteFactory
                 ContractResolver = new CamelCasePropertyNamesContractResolver(),
                 Converters =
                 {
-                    new StringEnumConverter()
+                    new StringEnumConverter(),
+                    new FlatObservableCollectionIntConverter()
                 }
             };
             return jsonSerializer;

@@ -1,0 +1,24 @@
+﻿<UserControl 
+    x:Class="SpriteFactory.Controls.EditableTextBlock"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    mc:Ignorable="d" 
+    d:DesignHeight="24" 
+    d:DesignWidth="200"
+    x:Name="EditableTextBlockUserControl">
+    <DockPanel LastChildFill="True">
+        <Button DockPanel.Dock="Right" Click="RenameButton_OnClick" Style="{StaticResource HiddenButtonStyle}">
+            <Viewbox Width="16" Height="16">
+                <Canvas Width="24" Height="24">
+                    <Path Fill="WhiteSmoke" Data="M20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18,2.9 17.35,2.9 16.96,3.29L15.12,5.12L18.87,8.87M3,17.25V21H6.75L17.81,9.93L14.06,6.18L3,17.25Z" />
+                </Canvas>
+            </Viewbox>
+        </Button>
+        <Grid>
+            <TextBlock x:Name="TextBlock" VerticalAlignment="Center" Text="{Binding Text, ElementName=EditableTextBlockUserControl}" />
+            <TextBox x:Name="TextBox" VerticalAlignment="Center" Text="{Binding Text, ElementName=EditableTextBlockUserControl}" />
+        </Grid>
+    </DockPanel>
+</UserControl>
