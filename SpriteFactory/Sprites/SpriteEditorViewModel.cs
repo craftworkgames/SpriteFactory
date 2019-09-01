@@ -71,7 +71,7 @@ namespace SpriteFactory.Sprites
                 if (SetPropertyValue(ref _texturePath, value, nameof(TexturePath)))
                 {
                     TextureName = Path.GetFileName(_texturePath);
-                    Texture = _contentManager.LoadRaw<Texture2D>(TexturePath);
+                    Texture = _texturePath != null ? _contentManager.LoadRaw<Texture2D>(_texturePath) : null;
                 }
             }
         }
@@ -90,7 +90,10 @@ namespace SpriteFactory.Sprites
             private set
             {
                 if (SetPropertyValue(ref _texture, value, nameof(Texture)))
-                    Camera.LookAt(Texture.Bounds.Center.ToVector2());
+                {
+                    if(_texture != null)
+                        Camera.LookAt(_texture.Bounds.Center.ToVector2());
+                }
             }
         }
         
@@ -321,11 +324,17 @@ namespace SpriteFactory.Sprites
 
         public void SetData(string filePath, SpritesFile data)
         {
-            var directory = Path.GetDirectoryName(filePath);
-            // ReSharper disable once AssignNullToNotNullAttribute
-            var texturePath = Path.Combine(directory, data.Texture);
+            if (string.IsNullOrEmpty(filePath))
+            {
+                TexturePath = null;
+            }
+            else
+            {
+                var directory = Path.GetDirectoryName(filePath);
+                // ReSharper disable once AssignNullToNotNullAttribute
+                TexturePath = Path.Combine(directory, data.Texture);
+            }
 
-            TexturePath = texturePath;
             TileWidth = data.Content.TileWidth;
             TileHeight = data.Content.TileHeight;
             Animations.Clear();

@@ -2,7 +2,7 @@
 {
     public class TilesetContent
     {
-        public int TileWidth { get; set; }
-        public int TileHeight { get; set; }
+        public int TileWidth { get; set; } = 32;
+        public int TileHeight { get; set; } = 32;
     }
 }

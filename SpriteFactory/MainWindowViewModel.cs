@@ -4,10 +4,6 @@ using Catel.IoC;
 using Catel.MVVM;
 using Catel.Services;
 using Microsoft.Xna.Framework;
-using Newtonsoft.Json;
-using Newtonsoft.Json.Converters;
-using Newtonsoft.Json.Serialization;
-using SpriteFactory.Json;
 using SpriteFactory.MonoGameControls;
 using SpriteFactory.Sprites;
 
@@ -23,6 +19,7 @@ namespace SpriteFactory
             SaveAsCommand = new Command(SaveAs);
         }
 
+        public Document<SpritesFile> Document { get; set; }
 
         public int Width => GraphicsDevice.Viewport.Width;
         public int Height => GraphicsDevice.Viewport.Height;
@@ -45,22 +42,8 @@ namespace SpriteFactory
 
         public void New()
         {
-
-        }
-
-        private static JsonSerializer CreateJsonSerializer()
-        {
-            var jsonSerializer = new JsonSerializer
-            {
-                Formatting = Formatting.Indented,
-                ContractResolver = new CamelCasePropertyNamesContractResolver(),
-                Converters =
-                {
-                    new StringEnumConverter(),
-                    new FlatObservableCollectionIntConverter()
-                }
-            };
-            return jsonSerializer;
+            Document = new Document<SpritesFile>();
+            SpriteEditor.SetData(Document.FullPath, Document.Content);
         }
 
         private T OpenFileDialog<T>() where T : IFileSupport
@@ -71,35 +54,36 @@ namespace SpriteFactory
         }
 
         public ICommand OpenCommand { get; }
-
         public async void Open()
         {
             var openFileService = OpenFileDialog<IOpenFileService>();
 
             if (await openFileService.DetermineFileAsync())
             {
-                var jsonSerializer = CreateJsonSerializer();
                 var filePath = openFileService.FileName;
 
-                using (var streamReader = new StreamReader(filePath))
-                using (var jsonReader = new JsonTextReader(streamReader))
-                {
-                    var data = jsonSerializer.Deserialize<SpritesFile>(jsonReader);
-                    SpriteEditor.SetData(filePath, data);
-                }
+                Document = Document<SpritesFile>.Load(filePath);
+                SpriteEditor.SetData(filePath, Document.Content);
             }
         }
 
         public ICommand SaveCommand { get; }
-
         public void Save()
         {
-            // TODO: Detect if the file has already been saved?
-            SaveAs();
+            if (!Document.IsSaved)
+            {
+                SaveAs();
+            }
+            else
+            {
+                var filePath = Document.FullPath;
+                var content = SpriteEditor.GetData(filePath);
+
+                Document.Save(filePath, content);
+            }
         }
 
         public ICommand SaveAsCommand { get; }
-
         public async void SaveAs()
         {
             var saveFileService = OpenFileDialog<ISaveFileService>();
@@ -107,15 +91,10 @@ namespace SpriteFactory
 
             if (await saveFileService.DetermineFileAsync())
             {
-                var jsonSerializer = CreateJsonSerializer();
                 var filePath = saveFileService.FileName;
+                var content = SpriteEditor.GetData(filePath);
 
-                using (var streamWriter = new StreamWriter(filePath))
-                using (var jsonWriter = new JsonTextWriter(streamWriter))
-                {
-                    var data = SpriteEditor.GetData(filePath);
-                    jsonSerializer.Serialize(jsonWriter, data);
-                }
+                Document.Save(filePath, content);
             }
         }
 
