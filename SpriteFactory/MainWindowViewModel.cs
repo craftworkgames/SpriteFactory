@@ -43,7 +43,7 @@ namespace SpriteFactory
         public void New()
         {
             Document = new Document<SpritesFile>();
-            SpriteEditor.SetData(Document.FullPath, Document.Content);
+            SpriteEditor.LoadDocument(Document.FullPath, Document.Content);
         }
 
         private T OpenFileDialog<T>() where T : IFileSupport
@@ -63,7 +63,7 @@ namespace SpriteFactory
                 var filePath = openFileService.FileName;
 
                 Document = Document<SpritesFile>.Load(filePath);
-                SpriteEditor.SetData(filePath, Document.Content);
+                SpriteEditor.LoadDocument(filePath, Document.Content);
             }
         }
 
@@ -77,7 +77,7 @@ namespace SpriteFactory
             else
             {
                 var filePath = Document.FullPath;
-                var content = SpriteEditor.GetData(filePath);
+                var content = SpriteEditor.SaveDocument(filePath);
 
                 Document.Save(filePath, content);
             }
@@ -92,7 +92,7 @@ namespace SpriteFactory
             if (await saveFileService.DetermineFileAsync())
             {
                 var filePath = saveFileService.FileName;
-                var content = SpriteEditor.GetData(filePath);
+                var content = SpriteEditor.SaveDocument(filePath);
 
                 Document.Save(filePath, content);
             }

@@ -189,7 +189,7 @@ namespace SpriteFactory.Sprites
 
         private int? GetFrameIndex()
         {
-            if (!Texture.Bounds.Contains(WorldPosition))
+            if (Texture == null || !Texture.Bounds.Contains(WorldPosition))
                 return null;
 
             var columns = Texture.Width / TileWidth;
@@ -288,14 +288,14 @@ namespace SpriteFactory.Sprites
                 if (_frameIndex >= SelectedAnimation.KeyFrames.Count)
                     _frameIndex = 0;
 
-                var previewZoom = SelectedPreviewZoom.Value;
                 var frame = SelectedAnimation.KeyFrames[_frameIndex];
                 var sourceRectangle = GetFrameRectangle(frame);
-                var destinationRectangle = new Rectangle(_graphicsDevice.Viewport.Width - TileWidth * previewZoom, 0, TileWidth * previewZoom, TileHeight * previewZoom);
+                var previewRectangle = GetPreviewRectangle();
 
                 _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
-                _spriteBatch.Draw(_backgroundTexture, destinationRectangle, null, Color.White);
-                _spriteBatch.Draw(Texture, destinationRectangle, sourceRectangle, Color.White);
+                _spriteBatch.Draw(_backgroundTexture, previewRectangle, null, Color.White);
+                _spriteBatch.DrawRectangle(previewRectangle, Color.White * 0.5f);
+                _spriteBatch.Draw(Texture, previewRectangle, sourceRectangle, Color.White);
                 _spriteBatch.End();
             }
 
@@ -307,7 +307,36 @@ namespace SpriteFactory.Sprites
             _spriteBatch.End();
         }
 
-        public SpritesFile GetData(string filePath)
+        private Rectangle GetPreviewRectangle()
+        {
+            if(TileWidth == 0 || TileHeight == 0)
+                return Rectangle.Empty;
+
+            const int max = 256;
+            var previewZoom = SelectedPreviewZoom.Value;
+            var width = TileWidth * previewZoom;
+            var height = TileHeight * previewZoom;
+            var ratio = TileWidth / (float) TileHeight;
+
+            if (width > max || height > max)
+            {
+                if (ratio >= 1f)
+                {
+                    width = max;
+                    height = (int) (max / ratio);
+                }
+                else if (height > max)
+                {
+                    height = max;
+                    width = (int) (max * ratio);
+                }
+            }
+
+            var x = _graphicsDevice.Viewport.Width - width;
+            return new Rectangle(x, 0, width, height);
+        }
+
+        public SpritesFile SaveDocument(string filePath)
         {
             return new SpritesFile
             {
@@ -322,7 +351,7 @@ namespace SpriteFactory.Sprites
             };
         }
 
-        public void SetData(string filePath, SpritesFile data)
+        public void LoadDocument(string filePath, SpritesFile data)
         {
             if (string.IsNullOrEmpty(filePath))
             {
@@ -339,6 +368,7 @@ namespace SpriteFactory.Sprites
             TileHeight = data.Content.TileHeight;
             Animations.Clear();
             Animations.AddRange(data.Animations);
+            SelectedAnimation = Animations.FirstOrDefault();
         }
     }
 }
