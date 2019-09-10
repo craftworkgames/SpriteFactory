@@ -17,17 +17,32 @@
             <ColumnDefinition Width="1*" />
         </Grid.ColumnDefinitions>
 
-        <monoGameControls:MonoGameContentControl 
-            Grid.Column="0"
-            x:Name="MonoGameContent"
-            Cursor="{Binding Cursor}"
-            AllowDrop="True" />
+        <DockPanel LastChildFill="True" Grid.Column="0">
+            <StackPanel Orientation="Horizontal" DockPanel.Dock="Top" HorizontalAlignment="Right">
+                <Label Content="Preview Zoom" />
+                <ComboBox ItemsSource="{Binding PreviewZoomOptions}" SelectedItem="{Binding SelectedPreviewZoom}" />
+            </StackPanel>
+
+            <StackPanel DockPanel.Dock="Bottom">
+                <Label Content="Key Frames" />
+                <ListBox DataContext="{Binding SelectedAnimation}" ItemsSource="{Binding KeyFrames}" BorderThickness="1" MinHeight="200" VerticalAlignment="Top">
+                    <ListBox.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal" />
+                        </ItemsPanelTemplate>
+                    </ListBox.ItemsPanel>
+                </ListBox>
+            </StackPanel>
+
+            <monoGameControls:MonoGameContentControl 
+                x:Name="MonoGameContent"
+                Cursor="{Binding Cursor}"
+                AllowDrop="True" />
+        </DockPanel>
 
         <GridSplitter Width="8" Grid.Column="1" VerticalAlignment="Stretch"  ResizeBehavior="PreviousAndNext" ShowsPreview="False"  />
 
         <StackPanel Margin="5" DockPanel.Dock="Right" Grid.Column="2">
-            <Label Content="Preview Zoom" />
-            <ComboBox ItemsSource="{Binding PreviewZoomOptions}" SelectedItem="{Binding SelectedPreviewZoom}" />
 
             <Label Content="Texture" />
             <DockPanel>
@@ -54,9 +69,6 @@
                     </DataTemplate>
                 </ListBox.ItemTemplate>
             </ListBox>
-
-            <Label Content="Key Frames" />
-            <ListBox DataContext="{Binding SelectedAnimation}" ItemsSource="{Binding KeyFrames}" BorderThickness="1" MinHeight="200" />
         </StackPanel>
     </Grid>
 </UserControl>
