@@ -124,10 +124,10 @@ namespace SpriteFactory.Sprites
 
         public Vector2 WorldPosition { get; set; }
 
-        public ObservableCollection<SpriteKeyFrameAnimation> Animations { get; } = new ObservableCollection<SpriteKeyFrameAnimation>();
+        public ObservableCollection<KeyFrameAnimationViewModel> Animations { get; } = new ObservableCollection<KeyFrameAnimationViewModel>();
 
-        private SpriteKeyFrameAnimation _selectedAnimation;
-        public SpriteKeyFrameAnimation SelectedAnimation
+        private KeyFrameAnimationViewModel _selectedAnimation;
+        public KeyFrameAnimationViewModel SelectedAnimation
         {
             get => _selectedAnimation;
             set => SetPropertyValue(ref _selectedAnimation, value, nameof(SelectedAnimation));
@@ -138,7 +138,7 @@ namespace SpriteFactory.Sprites
 
         private void AddAnimation()
         {
-            var animation = new SpriteKeyFrameAnimation {Name = $"animation{Animations.Count}"};
+            var animation = new KeyFrameAnimationViewModel {Name = $"animation{Animations.Count}"};
             Animations.Add(animation);
             SelectedAnimation = animation;
         }
@@ -192,7 +192,11 @@ namespace SpriteFactory.Sprites
                 var frameIndex = GetFrameIndex();
 
                 if (frameIndex.HasValue)
-                    SelectedAnimation?.KeyFrames.Add(frameIndex.Value);
+                {
+                    var index = frameIndex.Value;
+                    var keyFrame = new KeyFrameViewModel(index, TexturePath, GetFrameRectangle(index));
+                    SelectedAnimation?.KeyFrames.Add(keyFrame);
+                }
             }
         }
 
@@ -236,8 +240,11 @@ namespace SpriteFactory.Sprites
             {
                 var frameIndex = GetFrameIndex();
 
-                if (frameIndex.HasValue && !SelectedAnimation.KeyFrames.Contains(frameIndex.Value))
-                    SelectedAnimation?.KeyFrames.Add(frameIndex.Value);
+                if (frameIndex.HasValue && SelectedAnimation.KeyFrames.All(k => k.Index != frameIndex.Value))
+                {
+                    var keyFrame = new KeyFrameViewModel(frameIndex.Value, TexturePath, GetFrameRectangle(frameIndex.Value));
+                    SelectedAnimation?.KeyFrames.Add(keyFrame);
+                }
             }
 
             _previousMousePosition = mouseState.Position;
@@ -287,7 +294,9 @@ namespace SpriteFactory.Sprites
                     TileWidth = TileWidth,
                     TileHeight = TileHeight
                 },
-                Animations = Animations.ToList()
+                Animations = Animations
+                    .Select(a => a.ToAnimation())
+                    .ToList()
             };
         }
 
@@ -307,7 +316,7 @@ namespace SpriteFactory.Sprites
             TileWidth = data.Content.TileWidth;
             TileHeight = data.Content.TileHeight;
             Animations.Clear();
-            Animations.AddRange(data.Animations);
+            Animations.AddRange(data.Animations.Select(a => KeyFrameAnimationViewModel.FromAnimation(a, TexturePath, GetFrameRectangle)));
             SelectedAnimation = Animations.FirstOrDefault();
         }
 
@@ -333,7 +342,7 @@ namespace SpriteFactory.Sprites
             {
                 foreach (var keyFrame in SelectedAnimation.KeyFrames)
                 {
-                    var keyFrameRectangle = GetFrameRectangle(keyFrame);
+                    var keyFrameRectangle = GetFrameRectangle(keyFrame.Index);
                     _spriteBatch.FillRectangle(keyFrameRectangle, Color.CornflowerBlue * 0.5f);
                 }
             }
@@ -375,7 +384,7 @@ namespace SpriteFactory.Sprites
                     _frameIndex = 0;
 
                 var frame = SelectedAnimation.KeyFrames[_frameIndex];
-                var sourceRectangle = GetFrameRectangle(frame);
+                var sourceRectangle = GetFrameRectangle(frame.Index);
                 var previewRectangle = GetPreviewRectangle();
 
                 _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);

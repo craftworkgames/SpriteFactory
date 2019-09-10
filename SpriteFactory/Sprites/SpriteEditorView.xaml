@@ -25,12 +25,21 @@
 
             <StackPanel DockPanel.Dock="Bottom">
                 <Label Content="Key Frames" />
-                <ListBox DataContext="{Binding SelectedAnimation}" ItemsSource="{Binding KeyFrames}" BorderThickness="1" MinHeight="200" VerticalAlignment="Top">
+                <ListBox DataContext="{Binding SelectedAnimation}" ItemsSource="{Binding KeyFrames}" BorderThickness="1" MinHeight="32">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal" />
                         </ItemsPanelTemplate>
                     </ListBox.ItemsPanel>
+                    <ListBox.ItemTemplate>
+                        <DataTemplate DataType="sprites:KeyFrameViewModel">
+                            <Image>
+                                <Image.Source>
+                                    <CroppedBitmap Source="{Binding ImagePath}" SourceRect="{Binding Region}" />
+                                </Image.Source>
+                            </Image>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
                 </ListBox>
             </StackPanel>
 
@@ -64,7 +73,7 @@
             </StackPanel>
             <ListBox ItemsSource="{Binding Animations}" SelectedItem="{Binding SelectedAnimation}" BorderThickness="1" MinHeight="200">
                 <ListBox.ItemTemplate>
-                    <DataTemplate DataType="sprites:SpriteKeyFrameAnimation">
+                    <DataTemplate DataType="sprites:KeyFrameAnimationViewModel">
                         <controls:EditableTextBlock Text="{Binding Name}" />
                     </DataTemplate>
                 </ListBox.ItemTemplate>
