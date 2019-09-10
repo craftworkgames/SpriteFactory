@@ -81,6 +81,8 @@ namespace SpriteFactory.Sprites
                 {
                     TextureName = Path.GetFileName(_texturePath);
                     Texture = _texturePath != null ? Content.LoadRaw<Texture2D>(_texturePath) : null;
+                    Animations.Clear();
+                    SelectedAnimation = null;
                 }
             }
         }
@@ -112,14 +114,22 @@ namespace SpriteFactory.Sprites
         public int TileWidth
         {
             get => _tileWidth;
-            set => SetPropertyValue(ref _tileWidth, value, nameof(TileWidth));
+            set
+            {
+                if (SetPropertyValue(ref _tileWidth, value, nameof(TileWidth)))
+                    SelectedAnimation = null;
+            }
         }
 
         private int _tileHeight = 32;
         public int TileHeight
         {
             get => _tileHeight;
-            set => SetPropertyValue(ref _tileHeight, value, nameof(TileHeight));
+            set
+            {
+                if (SetPropertyValue(ref _tileHeight, value, nameof(TileHeight)))
+                    SelectedAnimation = null;
+            }
         }
 
         public Vector2 WorldPosition { get; set; }
@@ -194,7 +204,7 @@ namespace SpriteFactory.Sprites
                 if (frameIndex.HasValue)
                 {
                     var index = frameIndex.Value;
-                    var keyFrame = new KeyFrameViewModel(index, TexturePath, GetFrameRectangle(index));
+                    var keyFrame = new KeyFrameViewModel(index, () => TexturePath, GetFrameRectangle);
                     SelectedAnimation?.KeyFrames.Add(keyFrame);
                 }
             }
@@ -223,7 +233,15 @@ namespace SpriteFactory.Sprites
             var columns = Texture.Width / TileWidth;
             var cy = frame / columns;
             var cx = frame - cy * columns;
-            return new Rectangle(cx * TileWidth, cy * TileHeight, TileWidth, TileHeight);
+            var rectangle = new Rectangle(cx * TileWidth, cy * TileHeight, TileWidth, TileHeight);
+
+            if (rectangle.Right > TextureBounds.Right)
+                return Rectangle.Empty;
+
+            if(rectangle.Bottom > TextureBounds.Bottom)
+                return Rectangle.Empty;
+
+            return rectangle;
         }
 
         public override void OnMouseMove(MouseStateArgs mouseState)
@@ -242,7 +260,7 @@ namespace SpriteFactory.Sprites
 
                 if (frameIndex.HasValue && SelectedAnimation.KeyFrames.All(k => k.Index != frameIndex.Value))
                 {
-                    var keyFrame = new KeyFrameViewModel(frameIndex.Value, TexturePath, GetFrameRectangle(frameIndex.Value));
+                    var keyFrame = new KeyFrameViewModel(frameIndex.Value, () => TexturePath, GetFrameRectangle);
                     SelectedAnimation?.KeyFrames.Add(keyFrame);
                 }
             }
@@ -316,7 +334,7 @@ namespace SpriteFactory.Sprites
             TileWidth = data.Content.TileWidth;
             TileHeight = data.Content.TileHeight;
             Animations.Clear();
-            Animations.AddRange(data.Animations.Select(a => KeyFrameAnimationViewModel.FromAnimation(a, TexturePath, GetFrameRectangle)));
+            Animations.AddRange(data.Animations.Select(a => KeyFrameAnimationViewModel.FromAnimation(a, () => TexturePath, GetFrameRectangle)));
             SelectedAnimation = Animations.FirstOrDefault();
         }
 

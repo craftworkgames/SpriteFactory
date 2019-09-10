@@ -20,10 +20,10 @@ namespace SpriteFactory.Sprites
             return new KeyFrameAnimation(Name, keyFrames);
         }
 
-        public static KeyFrameAnimationViewModel FromAnimation(KeyFrameAnimation animation, string imagePath, Func<int, Rectangle> getRectangle)
+        public static KeyFrameAnimationViewModel FromAnimation(KeyFrameAnimation animation, Func<string> getImagePath, Func<int, Rectangle> getRectangle)
         {
             var keyFrameViewModels = animation.KeyFrames
-                .Select(k => new KeyFrameViewModel(k, imagePath, getRectangle(k)));
+                .Select(k => new KeyFrameViewModel(k, getImagePath, getRectangle));
 
             return new KeyFrameAnimationViewModel
             {
