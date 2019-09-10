@@ -46,9 +46,11 @@ namespace SpriteFactory.MonoGameControls
         private bool _isFirstLoad = true;
         private bool _isInitialized;
 
+        public bool IsInDesignMode => DesignerProperties.GetIsInDesignMode(this);
+
         public MonoGameContentControl()
         {
-            if (DesignerProperties.GetIsInDesignMode(this))
+            if (IsInDesignMode)
                 return;
 
             _instanceCount++;
@@ -172,8 +174,12 @@ namespace SpriteFactory.MonoGameControls
 
         protected override void OnRenderSizeChanged(SizeChangedInfo sizeInfo)
         {
-            _logger.Information("Render size changed to {Size}", sizeInfo.NewSize);
             base.OnRenderSizeChanged(sizeInfo);
+
+            if (IsInDesignMode)
+                return;
+
+            _logger.Information("Render size changed to {Size}", sizeInfo.NewSize);
             
             // sometimes OnRenderSizeChanged happens before OnLoaded.
             Start();

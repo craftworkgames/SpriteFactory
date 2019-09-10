@@ -14,26 +14,14 @@ using SpriteFactory.MonoGameControls;
 
 namespace SpriteFactory.Sprites
 {
-    public class SpriteEditorViewModel : ViewModel
+    public class SpriteEditorViewModel : MonoGameViewModel
     {
-        private readonly ContentManagerExtended _contentManager;
-        private readonly GraphicsDevice _graphicsDevice;
-        private readonly SpriteBatch _spriteBatch;
-        private readonly Texture2D _backgroundTexture;
-        private readonly SpriteFont _spriteFont;
+        private SpriteBatch _spriteBatch;
+        private Texture2D _backgroundTexture;
+        private SpriteFont _spriteFont;
 
-        public SpriteEditorViewModel(ContentManagerExtended contentManager, GraphicsDevice graphicsDevice)
+        public SpriteEditorViewModel()
         {
-            _contentManager = contentManager;
-            _graphicsDevice = graphicsDevice;
-            _spriteBatch = new SpriteBatch(graphicsDevice);
-
-            _backgroundTexture = contentManager.Load<Texture2D>("checkered-dark");
-            _spriteFont = contentManager.Load<SpriteFont>("default");
-
-            Camera = new OrthographicCamera(graphicsDevice);
-            Camera.LookAt(Vector2.Zero);
-
             SelectTextureCommand = new Command(SelectTexture);
 
             AddAnimationCommand = new Command(AddAnimation);
@@ -42,7 +30,28 @@ namespace SpriteFactory.Sprites
             SelectedPreviewZoom = PreviewZoomOptions.LastOrDefault();
         }
 
-        public OrthographicCamera Camera { get; }
+        public override void LoadContent()
+        {
+            _spriteBatch = new SpriteBatch(GraphicsDevice);
+
+            _backgroundTexture = Content.Load<Texture2D>("checkered-dark");
+            _spriteFont = Content.Load<SpriteFont>("default");
+
+            Camera = new OrthographicCamera(GraphicsDevice);
+            Camera.LookAt(Vector2.Zero);
+        }
+
+        public int Width => GraphicsDevice.Viewport.Width;
+        public int Height => GraphicsDevice.Viewport.Height;
+
+        public OrthographicCamera Camera { get; private set; }
+
+        private Cursor _cursor;
+        public Cursor Cursor
+        {
+            get => _cursor;
+            set => SetPropertyValue(ref _cursor, value, nameof(Cursor));
+        }
 
         public ZoomOptionViewModel[] PreviewZoomOptions { get; } =
         {
@@ -71,7 +80,7 @@ namespace SpriteFactory.Sprites
                 if (SetPropertyValue(ref _texturePath, value, nameof(TexturePath)))
                 {
                     TextureName = Path.GetFileName(_texturePath);
-                    Texture = _texturePath != null ? _contentManager.LoadRaw<Texture2D>(_texturePath) : null;
+                    Texture = _texturePath != null ? Content.LoadRaw<Texture2D>(_texturePath) : null;
                 }
             }
         }
@@ -175,7 +184,7 @@ namespace SpriteFactory.Sprites
 
         private Vector2 _previousMousePosition;
         
-        public void OnMouseDown(MouseStateArgs mouseState)
+        public override void OnMouseDown(MouseStateArgs mouseState)
         {
             if (mouseState.LeftButton == ButtonState.Pressed)
             {
@@ -185,6 +194,11 @@ namespace SpriteFactory.Sprites
                 if (frameIndex.HasValue)
                     SelectedAnimation?.KeyFrames.Add(frameIndex.Value);
             }
+        }
+
+        public override void OnMouseWheel(MouseStateArgs args, int delta)
+        {
+            Camera.ZoomIn(delta / 1000f);
         }
 
         private int? GetFrameIndex()
@@ -208,7 +222,7 @@ namespace SpriteFactory.Sprites
             return new Rectangle(cx * TileWidth, cy * TileHeight, TileWidth, TileHeight);
         }
 
-        public void OnMouseMove(MouseStateArgs mouseState)
+        public override void OnMouseMove(MouseStateArgs mouseState)
         {
             WorldPosition = Camera.ScreenToWorld(mouseState.Position);
             
@@ -232,80 +246,6 @@ namespace SpriteFactory.Sprites
         private int _frameIndex;
         private int _nextFrameHackCounter;
 
-        public void Draw()
-        {
-            if(Texture == null)
-                return;
-
-            // main texture
-            var boundingRectangle = TextureBounds;
-
-            _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap, transformMatrix: Camera.GetViewMatrix());
-            _spriteBatch.Draw(_backgroundTexture, sourceRectangle: boundingRectangle, destinationRectangle: boundingRectangle, color: Color.White);
-
-            if (SelectedAnimation != null)
-            {
-                foreach (var keyFrame in SelectedAnimation.KeyFrames)
-                {
-                    var keyFrameRectangle = GetFrameRectangle(keyFrame);
-                    _spriteBatch.FillRectangle(keyFrameRectangle, Color.CornflowerBlue * 0.5f);
-                }
-            }
-
-            _spriteBatch.Draw(Texture, sourceRectangle: boundingRectangle, destinationRectangle: boundingRectangle, color: Color.White);
-            
-            // highlighter
-            if (TileWidth > 1 && TileHeight > 1)
-            {
-                for (var y = 0; y <= Texture.Height; y += TileHeight)
-                    _spriteBatch.DrawLine(0, y, boundingRectangle.Width, y, Color.White * 0.5f);
-
-                for (var x = 0; x <= Texture.Width; x += TileWidth)
-                    _spriteBatch.DrawLine(x, 0, x, boundingRectangle.Height, Color.White * 0.5f);
-
-                if (boundingRectangle.Contains(WorldPosition))
-                {
-                    var cx = (int)(WorldPosition.X / TileWidth);
-                    var cy = (int)(WorldPosition.Y / TileHeight);
-
-                    _spriteBatch.FillRectangle(cx * TileWidth, cy * TileHeight, TileWidth, TileHeight, Color.CornflowerBlue * 0.5f);
-                }
-            }
-            
-            _spriteBatch.End();
-
-            // animation preview
-            if (SelectedAnimation != null && SelectedAnimation.KeyFrames.Any())
-            {
-                _nextFrameHackCounter++;
-
-                if (_nextFrameHackCounter >= 10)
-                {
-                    _frameIndex++;
-                    _nextFrameHackCounter = 0;
-                }
-
-                if (_frameIndex >= SelectedAnimation.KeyFrames.Count)
-                    _frameIndex = 0;
-
-                var frame = SelectedAnimation.KeyFrames[_frameIndex];
-                var sourceRectangle = GetFrameRectangle(frame);
-                var previewRectangle = GetPreviewRectangle();
-
-                _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
-                _spriteBatch.Draw(_backgroundTexture, previewRectangle, null, Color.White);
-                _spriteBatch.DrawRectangle(previewRectangle, Color.White * 0.5f);
-                _spriteBatch.Draw(Texture, previewRectangle, sourceRectangle, Color.White);
-                _spriteBatch.End();
-            }
-
-            // debug text
-            var frameIndex = GetFrameIndex();
-            var frameRectangle = frameIndex.HasValue ? GetFrameRectangle(frameIndex.Value) : Rectangle.Empty;
-            _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
-            _spriteBatch.DrawString(_spriteFont, $"{frameIndex}: {frameRectangle}", Vector2.Zero, Color.White);
-            _spriteBatch.End();
-        }
 
         private Rectangle GetPreviewRectangle()
         {
@@ -332,7 +272,7 @@ namespace SpriteFactory.Sprites
                 }
             }
 
-            var x = _graphicsDevice.Viewport.Width - width;
+            var x = GraphicsDevice.Viewport.Width - width;
             return new Rectangle(x, 0, width, height);
         }
 
@@ -369,6 +309,88 @@ namespace SpriteFactory.Sprites
             Animations.Clear();
             Animations.AddRange(data.Animations);
             SelectedAnimation = Animations.FirstOrDefault();
+        }
+
+
+        public override void Update(GameTime gameTime)
+        {
+        }
+
+        public override void Draw(GameTime gameTime)
+        {
+            GraphicsDevice.Clear(Color.Black);
+
+            if (Texture == null)
+                return;
+
+            // main texture
+            var boundingRectangle = TextureBounds;
+
+            _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap, transformMatrix: Camera.GetViewMatrix());
+            _spriteBatch.Draw(_backgroundTexture, sourceRectangle: boundingRectangle, destinationRectangle: boundingRectangle, color: Color.White);
+
+            if (SelectedAnimation != null)
+            {
+                foreach (var keyFrame in SelectedAnimation.KeyFrames)
+                {
+                    var keyFrameRectangle = GetFrameRectangle(keyFrame);
+                    _spriteBatch.FillRectangle(keyFrameRectangle, Color.CornflowerBlue * 0.5f);
+                }
+            }
+
+            _spriteBatch.Draw(Texture, sourceRectangle: boundingRectangle, destinationRectangle: boundingRectangle, color: Color.White);
+
+            // highlighter
+            if (TileWidth > 1 && TileHeight > 1)
+            {
+                for (var y = 0; y <= Texture.Height; y += TileHeight)
+                    _spriteBatch.DrawLine(0, y, boundingRectangle.Width, y, Color.White * 0.5f);
+
+                for (var x = 0; x <= Texture.Width; x += TileWidth)
+                    _spriteBatch.DrawLine(x, 0, x, boundingRectangle.Height, Color.White * 0.5f);
+
+                if (boundingRectangle.Contains(WorldPosition))
+                {
+                    var cx = (int)(WorldPosition.X / TileWidth);
+                    var cy = (int)(WorldPosition.Y / TileHeight);
+
+                    _spriteBatch.FillRectangle(cx * TileWidth, cy * TileHeight, TileWidth, TileHeight, Color.CornflowerBlue * 0.5f);
+                }
+            }
+
+            _spriteBatch.End();
+
+            // animation preview
+            if (SelectedAnimation != null && SelectedAnimation.KeyFrames.Any())
+            {
+                _nextFrameHackCounter++;
+
+                if (_nextFrameHackCounter >= 10)
+                {
+                    _frameIndex++;
+                    _nextFrameHackCounter = 0;
+                }
+
+                if (_frameIndex >= SelectedAnimation.KeyFrames.Count)
+                    _frameIndex = 0;
+
+                var frame = SelectedAnimation.KeyFrames[_frameIndex];
+                var sourceRectangle = GetFrameRectangle(frame);
+                var previewRectangle = GetPreviewRectangle();
+
+                _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
+                _spriteBatch.Draw(_backgroundTexture, previewRectangle, null, Color.White);
+                _spriteBatch.DrawRectangle(previewRectangle, Color.White * 0.5f);
+                _spriteBatch.Draw(Texture, previewRectangle, sourceRectangle, Color.White);
+                _spriteBatch.End();
+            }
+
+            // debug text
+            var frameIndex = GetFrameIndex();
+            var frameRectangle = frameIndex.HasValue ? GetFrameRectangle(frameIndex.Value) : Rectangle.Empty;
+            _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
+            _spriteBatch.DrawString(_spriteFont, $"{frameIndex}: {frameRectangle}", Vector2.Zero, Color.White);
+            _spriteBatch.End();
         }
     }
 }

@@ -16,6 +16,13 @@
         </Style.Triggers>
     </Style>
 
+    <!-- GridSplitter -->
+    <SolidColorBrush x:Key="GridSplitterBackground" Color="#2D2D30" />
+
+    <Style TargetType="GridSplitter">
+        <Setter Property="Background" Value="{StaticResource GridSplitterBackground}" />
+    </Style>
+
     <!-- Menu -->
     <SolidColorBrush x:Key="MenuDefaultBackground" Color="#2D2D30" />
     <SolidColorBrush x:Key="MenuDefaultText" Color="#F1F1F1" />

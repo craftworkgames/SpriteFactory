@@ -48,14 +48,6 @@
             </MenuItem>-->
         </Menu>
 
-        <sprites:SpriteEditorView
-            DataContext="{Binding SpriteEditor}"
-            DockPanel.Dock="Right" 
-            Width="500" />
-
-        <monoGameControls:MonoGameContentControl 
-            x:Name="MonoGameContent"
-            Cursor="{Binding Cursor}"
-            AllowDrop="True" />
+        <sprites:SpriteEditorView DataContext="{Binding SpriteEditor}" />
     </DockPanel>
 </mah:MetroWindow>
