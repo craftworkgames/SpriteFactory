@@ -4,7 +4,7 @@ using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
 using SpriteFactory.Json;
 
-namespace SpriteFactory
+namespace SpriteFactory.Documents
 {
     public class Document<T> where T : new()
     {

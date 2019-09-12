@@ -10,6 +10,7 @@ using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
 using Microsoft.Xna.Framework.Input;
 using MonoGame.Extended;
+using SpriteFactory.Documents;
 using SpriteFactory.MonoGameControls;
 
 namespace SpriteFactory.Sprites
@@ -301,38 +302,24 @@ namespace SpriteFactory.Sprites
             return new Rectangle(x, 0, width, height);
         }
 
-        public SpritesFile SaveDocument(string filePath)
+        public SpriteFactoryFile GetDocumentContent(DocumentContext context)
         {
-            return new SpritesFile
+            return new SpriteFactoryFile
             {
-                Texture = Catel.IO.Path.GetRelativePath(TexturePath, Path.GetDirectoryName(filePath)),
-                Mode = SpriteMode.Tileset,
-                Content = new TilesetContent
-                {
-                    TileWidth = TileWidth,
-                    TileHeight = TileHeight
-                },
+                Texture = context.GetRelativePath(TexturePath), 
+                TileWidth = TileWidth,
+                TileHeight = TileHeight,
                 Animations = Animations
                     .Select(a => a.ToAnimation())
                     .ToList()
             };
         }
 
-        public void LoadDocument(string filePath, SpritesFile data)
+        public void SetDocumentContent(DocumentContext context, SpriteFactoryFile data)
         {
-            if (string.IsNullOrEmpty(filePath))
-            {
-                TexturePath = null;
-            }
-            else
-            {
-                var directory = Path.GetDirectoryName(filePath);
-                // ReSharper disable once AssignNullToNotNullAttribute
-                TexturePath = Path.Combine(directory, data.Texture);
-            }
-
-            TileWidth = data.Content.TileWidth;
-            TileHeight = data.Content.TileHeight;
+            TexturePath = context.IsNewFile ? null : context.GetFullPath(data.Texture);
+            TileWidth = data.TileWidth;
+            TileHeight = data.TileHeight;
             Animations.Clear();
             Animations.AddRange(data.Animations.Select(a => KeyFrameAnimationViewModel.FromAnimation(a, () => TexturePath, GetFrameRectangle)));
             SelectedAnimation = Animations.FirstOrDefault();

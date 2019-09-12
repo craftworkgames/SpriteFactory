@@ -2,16 +2,15 @@
 
 namespace SpriteFactory.Sprites
 {
-    public class SpritesFile
+    public class SpriteFactoryFile
     {
-        public SpritesFile()
+        public SpriteFactoryFile()
         {
-            Content = new TilesetContent();
         }
 
         public string Texture { get; set; }
-        public SpriteMode Mode { get; set; } = SpriteMode.Tileset;
-        public TilesetContent Content { get; set; }
+        public int TileWidth { get; set; } = 32;
+        public int TileHeight { get; set; } = 32;
         public List<KeyFrameAnimation> Animations { get; set; } = new List<KeyFrameAnimation>();
     }
 }

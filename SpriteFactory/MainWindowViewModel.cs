@@ -3,6 +3,7 @@ using System.Windows.Input;
 using Catel.IoC;
 using Catel.MVVM;
 using Catel.Services;
+using SpriteFactory.Documents;
 using SpriteFactory.MonoGameControls;
 using SpriteFactory.Sprites;
 
@@ -20,7 +21,7 @@ namespace SpriteFactory
             SpriteEditor = new SpriteEditorViewModel();
         }
 
-        public Document<SpritesFile> Document { get; set; }
+        public Document<SpriteFactoryFile> Document { get; set; }
         
         private SpriteEditorViewModel _spriteEditor;
         public SpriteEditorViewModel SpriteEditor
@@ -33,8 +34,9 @@ namespace SpriteFactory
 
         public void New()
         {
-            Document = new Document<SpritesFile>();
-            SpriteEditor.LoadDocument(Document.FullPath, Document.Content);
+            var context = new DocumentContext();
+            Document = new Document<SpriteFactoryFile>();
+            SpriteEditor.SetDocumentContent(context, Document.Content);
         }
 
         private T OpenFileDialog<T>() where T : IFileSupport
@@ -52,9 +54,10 @@ namespace SpriteFactory
             if (await openFileService.DetermineFileAsync())
             {
                 var filePath = openFileService.FileName;
+                var context = new DocumentContext(filePath);
 
-                Document = Document<SpritesFile>.Load(filePath);
-                SpriteEditor.LoadDocument(filePath, Document.Content);
+                Document = Document<SpriteFactoryFile>.Load(filePath);
+                SpriteEditor.SetDocumentContent(context, Document.Content);
             }
         }
 
@@ -68,9 +71,7 @@ namespace SpriteFactory
             else
             {
                 var filePath = Document.FullPath;
-                var content = SpriteEditor.SaveDocument(filePath);
-
-                Document.Save(filePath, content);
+                SaveDocument(filePath);
             }
         }
 
@@ -83,10 +84,17 @@ namespace SpriteFactory
             if (await saveFileService.DetermineFileAsync())
             {
                 var filePath = saveFileService.FileName;
-                var content = SpriteEditor.SaveDocument(filePath);
-
-                Document.Save(filePath, content);
+                SaveDocument(filePath);
             }
         }
+
+        private void SaveDocument(string filePath)
+        {
+            var documentContext = new DocumentContext(filePath);
+            var content = SpriteEditor.GetDocumentContent(documentContext);
+            Document.Save(filePath, content);
+        }
     }
+
+
 }
