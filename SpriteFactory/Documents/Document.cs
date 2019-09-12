@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Serialization;
@@ -8,29 +9,48 @@ namespace SpriteFactory.Documents
 {
     public class Document<T> where T : new()
     {
-        public Document()
-            : this(new T())
+        private Document(string fullPath, T content)
         {
-        }
-
-        public Document(T content)
-        {
+            FullPath = fullPath;
             Content = content;
-            IsSaved = false;
+            IsSaved = true;
         }
 
-        public T Content { get; }
+        public string FullPath { get; private set; }
+        public bool IsNew => string.IsNullOrEmpty(FullPath);
         public bool IsSaved { get; set; }
-        public string FullPath { get; set; }
+        public T Content { get; }
 
-        public void Save(string fullPath, T content)
+        public string Directory => Path.GetDirectoryName(FullPath);
+        public string GetRelativePath(string path) => Catel.IO.Path.GetRelativePath(path, Directory);
+        public string GetFullPath(string path) => Path.Combine(Directory, path);
+
+        public static Document<T> New() => new Document<T>(null, new T());
+
+        public void Save(Func<Document<T>, T> getContent) => Save(FullPath, getContent);
+
+        public void Save(string fullPath, Func<Document<T>, T> getContent)
         {
-            var jsonSerializer = CreateJsonSerializer();
+            var oldFullPath = FullPath;
 
-            using (var streamWriter = new StreamWriter(fullPath))
-            using (var jsonWriter = new JsonTextWriter(streamWriter))
+            try
             {
-                jsonSerializer.Serialize(jsonWriter, content);
+                FullPath = fullPath;
+
+                var jsonSerializer = CreateJsonSerializer();
+
+                using (var streamWriter = new StreamWriter(fullPath))
+                using (var jsonWriter = new JsonTextWriter(streamWriter))
+                {
+                    var content = getContent(this);
+                    jsonSerializer.Serialize(jsonWriter, content);
+                }
+
+                IsSaved = true;
+            }
+            catch
+            {
+                FullPath = oldFullPath;
             }
         }
 
@@ -42,7 +62,7 @@ namespace SpriteFactory.Documents
             using (var jsonReader = new JsonTextReader(streamReader))
             {
                 var content = jsonSerializer.Deserialize<T>(jsonReader);
-                return new Document<T>(content);
+                return new Document<T>(fullPath, content);
             }
         }
 

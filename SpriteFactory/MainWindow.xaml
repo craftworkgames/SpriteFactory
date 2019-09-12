@@ -7,14 +7,15 @@
     xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
     xmlns:spriteFactory="clr-namespace:SpriteFactory"
     xmlns:sprites="clr-namespace:SpriteFactory.Sprites"
-    xmlns:monoGameControls="clr-namespace:SpriteFactory.MonoGameControls"
     mc:Ignorable="d"
-    Title="Sprite Factory" 
+    Title="{Binding Title}" 
     TitleCharacterCasing="Normal"
     WindowStartupLocation="CenterScreen"
     WindowState="Maximized"
     Width="800"
     Height="480"
+    Closing="MainWindow_OnClosing"
+    Loaded="MainWindow_OnLoaded"
     d:DataContext="{d:DesignInstance spriteFactory:MainWindowViewModel, IsDesignTimeCreatable=False}">
 
     <Window.DataContext>

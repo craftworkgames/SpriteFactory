@@ -7,6 +7,8 @@ namespace SpriteFactory
     {
         private ILogger _logger;
 
+        public const string Name = "Sprite Factory";
+
         protected override void OnStartup(StartupEventArgs e)
         {
             _logger = new LoggerConfiguration()

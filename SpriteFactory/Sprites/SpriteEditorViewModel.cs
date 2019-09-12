@@ -302,11 +302,11 @@ namespace SpriteFactory.Sprites
             return new Rectangle(x, 0, width, height);
         }
 
-        public SpriteFactoryFile GetDocumentContent(DocumentContext context)
+        public SpriteFactoryFile GetDocumentContent(Document<SpriteFactoryFile> document)
         {
             return new SpriteFactoryFile
             {
-                Texture = context.GetRelativePath(TexturePath), 
+                Texture = document.GetRelativePath(TexturePath), 
                 TileWidth = TileWidth,
                 TileHeight = TileHeight,
                 Animations = Animations
@@ -315,9 +315,10 @@ namespace SpriteFactory.Sprites
             };
         }
 
-        public void SetDocumentContent(DocumentContext context, SpriteFactoryFile data)
+        public void SetDocumentContent(Document<SpriteFactoryFile> document)
         {
-            TexturePath = context.IsNewFile ? null : context.GetFullPath(data.Texture);
+            var data = document.Content;
+            TexturePath = document.IsNew ? null : document.GetFullPath(data.Texture);
             TileWidth = data.TileWidth;
             TileHeight = data.TileHeight;
             Animations.Clear();

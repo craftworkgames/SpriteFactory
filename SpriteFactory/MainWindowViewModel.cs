@@ -1,42 +1,75 @@
 ﻿using System.IO;
+using System.Threading.Tasks;
 using System.Windows.Input;
 using Catel.IoC;
 using Catel.MVVM;
 using Catel.Services;
 using SpriteFactory.Documents;
-using SpriteFactory.MonoGameControls;
 using SpriteFactory.Sprites;
 
 namespace SpriteFactory
 {
-    public class MainWindowViewModel : MonoGameViewModel
+    public class MainWindowViewModel : ViewModel
     {
         public MainWindowViewModel()
         {
-            NewCommand = new Command(New);
+            NewCommand = new TaskCommand(New);
             OpenCommand = new Command(Open);
             SaveCommand = new Command(Save);
             SaveAsCommand = new Command(SaveAs);
 
+            // ReSharper disable once VirtualMemberCallInConstructor
+            Title = App.Name;
+
             SpriteEditor = new SpriteEditorViewModel();
+            SpriteEditor.PropertyChanged += (sender, args) =>
+            {
+                Document.IsSaved = false;
+                UpdateTitle();
+            };
         }
 
-        public Document<SpriteFactoryFile> Document { get; set; }
-        
+        protected override async Task InitializeAsync()
+        {
+            await New();
+        }
+
+        private Document<SpriteFactoryFile> _document;
+        public Document<SpriteFactoryFile> Document
+        {
+            get => _document;
+            private set
+            {
+                if (SetPropertyValue(ref _document, value, nameof(Document)))
+                    UpdateTitle();
+            }
+        }
+
         private SpriteEditorViewModel _spriteEditor;
         public SpriteEditorViewModel SpriteEditor
         {
             get => _spriteEditor;
             private set => SetPropertyValue(ref _spriteEditor, value, nameof(SpriteEditor));
         }
-        
+
+        private void UpdateTitle()
+        {
+            var fileName = Document.IsNew ? "(untitled)" : Path.GetFileName(Document.FullPath);
+            var savedIndicator = !Document.IsSaved ? "*" : string.Empty;
+            Title = $"{App.Name} - {fileName}{savedIndicator}";
+        }
+
         public ICommand NewCommand { get; }
 
-        public void New()
+        public async Task New()
         {
-            var context = new DocumentContext();
-            Document = new Document<SpriteFactoryFile>();
-            SpriteEditor.SetDocumentContent(context, Document.Content);
+            if (await ConfirmSave())
+            {
+                Document = Document<SpriteFactoryFile>.New();
+                SpriteEditor.SetDocumentContent(Document);
+                Document.IsSaved = true;
+                UpdateTitle();
+            }
         }
 
         private T OpenFileDialog<T>() where T : IFileSupport
@@ -49,29 +82,32 @@ namespace SpriteFactory
         public ICommand OpenCommand { get; }
         public async void Open()
         {
-            var openFileService = OpenFileDialog<IOpenFileService>();
-
-            if (await openFileService.DetermineFileAsync())
+            if (await ConfirmSave())
             {
-                var filePath = openFileService.FileName;
-                var context = new DocumentContext(filePath);
+                var openFileService = OpenFileDialog<IOpenFileService>();
 
-                Document = Document<SpriteFactoryFile>.Load(filePath);
-                SpriteEditor.SetDocumentContent(context, Document.Content);
+                if (await openFileService.DetermineFileAsync())
+                {
+                    var filePath = openFileService.FileName;
+                    Document = Document<SpriteFactoryFile>.Load(filePath);
+                    SpriteEditor.SetDocumentContent(Document);
+                    Document.IsSaved = true;
+                    UpdateTitle();
+                }
             }
         }
 
         public ICommand SaveCommand { get; }
         public void Save()
         {
-            if (!Document.IsSaved)
+            if (Document.IsNew)
             {
                 SaveAs();
             }
             else
             {
-                var filePath = Document.FullPath;
-                SaveDocument(filePath);
+                Document.Save(SpriteEditor.GetDocumentContent);
+                UpdateTitle();
             }
         }
 
@@ -84,15 +120,31 @@ namespace SpriteFactory
             if (await saveFileService.DetermineFileAsync())
             {
                 var filePath = saveFileService.FileName;
-                SaveDocument(filePath);
+                Document.Save(filePath, SpriteEditor.GetDocumentContent);
+                UpdateTitle();
             }
         }
 
-        private void SaveDocument(string filePath)
+        public async Task<bool> ConfirmSave()
         {
-            var documentContext = new DocumentContext(filePath);
-            var content = SpriteEditor.GetDocumentContent(documentContext);
-            Document.Save(filePath, content);
+            if (Document != null && !Document.IsSaved)
+            {
+                var messageService = DependencyResolver.Resolve<IMessageService>();
+                var result = await messageService.ShowAsync("Save changes?", "Save", MessageButton.YesNoCancel, MessageImage.Question);
+
+                switch (result)
+                {
+                    case MessageResult.Yes:
+                        Save();
+                        return true;
+                    case MessageResult.Cancel:
+                        return false;
+                    default:
+                        return true;
+                }
+            }
+
+            return true;
         }
     }
 
