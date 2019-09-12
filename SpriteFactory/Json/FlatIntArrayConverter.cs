@@ -1,12 +1,11 @@
 ﻿using System;
-using System.Collections.ObjectModel;
 using Newtonsoft.Json;
 
 namespace SpriteFactory.Json
 {
-    public class FlatObservableCollectionIntConverter : JsonConverter<ObservableCollection<int>>
+    public class FlatIntArrayConverter : JsonConverter<int[]>
     {
-        public override void WriteJson(JsonWriter writer, ObservableCollection<int> value, JsonSerializer serializer)
+        public override void WriteJson(JsonWriter writer, int[] value, JsonSerializer serializer)
         {
             var formatting = writer.Formatting;
 
@@ -23,7 +22,7 @@ namespace SpriteFactory.Json
 
         public override bool CanRead => false;
 
-        public override ObservableCollection<int> ReadJson(JsonReader reader, Type objectType, ObservableCollection<int> existingValue, bool hasExistingValue, JsonSerializer serializer)
+        public override int[] ReadJson(JsonReader reader, Type objectType, int[] existingValue, bool hasExistingValue, JsonSerializer serializer)
         {
             throw new NotSupportedException();
         }

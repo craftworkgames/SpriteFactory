@@ -75,7 +75,7 @@ namespace SpriteFactory.Documents
                 Converters =
                 {
                     new StringEnumConverter(),
-                    new FlatObservableCollectionIntConverter()
+                    new FlatIntArrayConverter()
                 }
             };
             return jsonSerializer;

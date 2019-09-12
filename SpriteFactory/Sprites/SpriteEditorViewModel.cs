@@ -402,10 +402,14 @@ namespace SpriteFactory.Sprites
 
             // debug text
             var frameIndex = GetFrameIndex();
-            var frameRectangle = frameIndex.HasValue ? GetFrameRectangle(frameIndex.Value) : Rectangle.Empty;
-            _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
-            _spriteBatch.DrawString(_spriteFont, $"{frameIndex}: {frameRectangle}", Vector2.Zero, Color.White);
-            _spriteBatch.End();
+
+            if (frameIndex.HasValue)
+            {
+                var frameRectangle = GetFrameRectangle(frameIndex.Value);
+                _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap);
+                _spriteBatch.DrawString(_spriteFont, $"frame: {frameIndex} ({frameRectangle.X}, {frameRectangle.Y})", Vector2.Zero, Color.White);
+                _spriteBatch.End();
+            }
         }
     }
 }
