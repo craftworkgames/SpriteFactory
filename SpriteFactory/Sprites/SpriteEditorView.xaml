@@ -25,18 +25,61 @@
 
             <StackPanel DockPanel.Dock="Bottom">
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
-                    <Button Content="First" />
-                    <Button Content="Previous" />
-                    <Button>
-                        <Canvas Width="76" Height="76" Clip="F1 M 0,0L 76,0L 76,76L 0,76L 0,0">
-                            <Path Width="20.5832" Height="31.6667" Canvas.Left="30.0833" Canvas.Top="22.1667" Stretch="Fill" Fill="#ffffff" Data="F1 M 30.0833,22.1667L 50.6665,37.6043L 50.6665,38.7918L 30.0833,53.8333L 30.0833,22.1667 Z "/>
+                    <Button Command="{Binding GoToFirstFrameCommand}" Style="{StaticResource ChromelessButtonStyle}" ToolTip="Jump to first frame">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="M20,5V19L13,12M6,5V19H4V5M13,5V19L6,12" Fill="White" />
                         </Canvas>
                     </Button>
-                    <Button Content="Next" />
-                    <Button Content="Last" />
+                    <Button Command="{Binding BackOneFrameCommand}" Style="{StaticResource ChromelessButtonStyle}" ToolTip="Go back one frame">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="M6,18V6H8V18H6M9.5,12L18,6V18L9.5,12Z" Fill="White" />
+                        </Canvas>
+                    </Button>
+                    <Button Command="{Binding PlayCommand}" ToolTip="Play / pause animation">
+                        <Button.Style>
+                            <Style TargetType="Button" BasedOn="{StaticResource ChromelessButtonStyle}">
+                                <Style.Triggers>
+                                    <DataTrigger Binding="{Binding IsPlaying}" Value="True">
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <Canvas Width="24" Height="24">
+                                                    <Path Data="M14,19H18V5H14M6,19H10V5H6V19Z" Fill="White" />
+                                                </Canvas>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                    <DataTrigger Binding="{Binding IsPlaying}" Value="False">
+                                        <Setter Property="Content">
+                                            <Setter.Value>
+                                                <Canvas Width="24" Height="24">
+                                                    <Path Data="M8,5.14V19.14L19,12.14L8,5.14Z" Fill="White" />
+                                                </Canvas>
+                                            </Setter.Value>
+                                        </Setter>
+                                    </DataTrigger>
+                                </Style.Triggers>
+                            </Style>
+                        </Button.Style>
+                    </Button>
+                    <Button Command="{Binding ForewardOneFrameCommand}" Style="{StaticResource ChromelessButtonStyle}" ToolTip="Go foreward one frame">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="M16,18H18V6H16M6,18L14.5,12L6,6V18Z" Fill="White" />
+                        </Canvas>
+                    </Button>
+                    <Button Command="{Binding GoToLastFrameCommand}" Style="{StaticResource ChromelessButtonStyle}" ToolTip="Jump to last frame">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="M4,5V19L11,12M18,5V19H20V5M11,5V19L18,12" Fill="White" />
+                        </Canvas>
+                    </Button>
+                    <Button Command="{Binding DeleteFrameCommand}" Style="{StaticResource ChromelessButtonStyle}" ToolTip="Delete the selected frame">
+                        <Canvas Width="24" Height="24">
+                            <Path Data="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z" Fill="White" />
+                        </Canvas>
+                    </Button>
                 </StackPanel>
 
-                <ListBox DataContext="{Binding SelectedAnimation}" ItemsSource="{Binding KeyFrames}" BorderThickness="1" MinHeight="64">
+                <ListBox DataContext="{Binding SelectedAnimation}" ItemsSource="{Binding KeyFrames}" SelectedItem="{Binding SelectedKeyFrame}" 
+                         MinHeight="64" HorizontalAlignment="Center" Margin="4">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal" />

@@ -29,6 +29,45 @@ namespace SpriteFactory.Sprites
             RemoveAnimationCommand = new Command(RemoveAnimation, () => SelectedAnimation != null);
 
             SelectedPreviewZoom = PreviewZoomOptions.LastOrDefault();
+
+            IsPlaying = true;
+
+            GoToFirstFrameCommand = new Command(() =>
+            {
+                if (SelectedAnimation != null)
+                {
+                    IsPlaying = false;
+                    SelectedAnimation.SelectedKeyFrame = SelectedAnimation.KeyFrames.FirstOrDefault();
+                }
+            });
+            BackOneFrameCommand = new Command(() => IncrementKeyFrameIndex(-1));
+            PlayCommand = new Command(() => IsPlaying = !IsPlaying);
+            ForewardOneFrameCommand = new Command(() => IncrementKeyFrameIndex(1));
+            GoToLastFrameCommand = new Command(() =>
+            {
+                if (SelectedAnimation != null)
+                {
+                    IsPlaying = false;
+                    SelectedAnimation.SelectedKeyFrame = SelectedAnimation.KeyFrames.LastOrDefault();
+                }
+            });
+            DeleteFrameCommand = new Command(() => SelectedAnimation?.KeyFrames.Remove(SelectedAnimation.SelectedKeyFrame));
+        }
+
+        private void IncrementKeyFrameIndex(int increment)
+        {
+            if (SelectedAnimation != null)
+            {
+                var index = SelectedAnimation.KeyFrames.IndexOf(SelectedAnimation.SelectedKeyFrame) + increment;
+
+                if (index >= SelectedAnimation.KeyFrames.Count)
+                    index = 0;
+                else if (index < 0)
+                    index = SelectedAnimation.KeyFrames.Count - 1;
+
+                SelectedAnimation.SelectedKeyFrame = SelectedAnimation.KeyFrames[index];
+                IsPlaying = false;
+            }
         }
 
         public override void LoadContent()
@@ -135,6 +174,13 @@ namespace SpriteFactory.Sprites
 
         public Vector2 WorldPosition { get; set; }
 
+        private bool _isPlaying;
+        public bool IsPlaying
+        {
+            get => _isPlaying;
+            private set => SetPropertyValue(ref _isPlaying, value, nameof(IsPlaying));
+        }
+
         public ObservableCollection<KeyFrameAnimationViewModel> Animations { get; } = new ObservableCollection<KeyFrameAnimationViewModel>();
 
         private KeyFrameAnimationViewModel _selectedAnimation;
@@ -148,6 +194,14 @@ namespace SpriteFactory.Sprites
 
         public ICommand AddAnimationCommand { get; }
         public ICommand RemoveAnimationCommand { get; }
+
+        public ICommand GoToFirstFrameCommand { get; }
+        public ICommand BackOneFrameCommand { get; }
+        public ICommand PlayCommand { get; }
+        public ICommand ForewardOneFrameCommand { get; }
+        public ICommand GoToLastFrameCommand { get; }
+
+        public ICommand DeleteFrameCommand { get; }
 
         private void AddAnimation()
         {
@@ -180,26 +234,6 @@ namespace SpriteFactory.Sprites
             if (await openFileService.DetermineFileAsync())
                 TexturePath = openFileService.FileName;
         }
-
-        //private void AutoDetect()
-        //{
-        //    var data = new Color[Texture.Width * Texture.Height];
-        //    Texture.GetData(data);
-
-        //    for (var y = 0; y < Texture.Height; y++)
-        //    {
-        //        for (var x = 0; x < Texture.Width; x++)
-        //        {
-        //            var color = data[y * Texture.Height + x];
-
-        //            if (color.A != 0)
-        //            {
-        //                if(_autoRectangle.IsEmpty)
-        //                    _autoRectangle = new Rectangle(x, y, 1, 1);
-        //            }
-        //        }
-        //    }
-        //}
 
         private Vector2 _previousMousePosition;
         
@@ -279,8 +313,7 @@ namespace SpriteFactory.Sprites
 
         private int _frameIndex;
         private int _nextFrameHackCounter;
-
-
+        
         private Rectangle GetPreviewRectangle()
         {
             if(TileWidth == 0 || TileHeight == 0)
@@ -334,7 +367,32 @@ namespace SpriteFactory.Sprites
             SelectedAnimation = Animations.FirstOrDefault();
         }
 
+        private KeyFrameViewModel GetCurrentFrame()
+        {
+            if (IsPlaying)
+            {
+                _nextFrameHackCounter++;
 
+                if (_nextFrameHackCounter >= 10)
+                {
+                    _frameIndex++;
+                    _nextFrameHackCounter = 0;
+                }
+
+                if (_frameIndex >= SelectedAnimation.KeyFrames.Count)
+                    _frameIndex = 0;
+
+                var frame = SelectedAnimation.KeyFrames[_frameIndex];
+                SelectedAnimation.SelectedKeyFrame = frame;
+                return frame;
+            }
+
+            if (SelectedAnimation.SelectedKeyFrame == null)
+                return SelectedAnimation.KeyFrames.FirstOrDefault();
+
+            return SelectedAnimation.SelectedKeyFrame;
+        }
+        
         public override void Update(GameTime gameTime)
         {
         }
@@ -392,18 +450,7 @@ namespace SpriteFactory.Sprites
             // animation preview
             if (SelectedAnimation != null && SelectedAnimation.KeyFrames.Any())
             {
-                _nextFrameHackCounter++;
-
-                if (_nextFrameHackCounter >= 10)
-                {
-                    _frameIndex++;
-                    _nextFrameHackCounter = 0;
-                }
-
-                if (_frameIndex >= SelectedAnimation.KeyFrames.Count)
-                    _frameIndex = 0;
-
-                var frame = SelectedAnimation.KeyFrames[_frameIndex];
+                var frame = GetCurrentFrame();
                 var sourceRectangle = GetFrameRectangle(frame.Index);
                 var previewRectangle = GetPreviewRectangle();
 
