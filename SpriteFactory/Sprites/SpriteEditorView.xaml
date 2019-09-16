@@ -24,8 +24,19 @@
             </StackPanel>
 
             <StackPanel DockPanel.Dock="Bottom">
-                <Label Content="Key Frames" />
-                <ListBox DataContext="{Binding SelectedAnimation}" ItemsSource="{Binding KeyFrames}" BorderThickness="1" MinHeight="32">
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Center">
+                    <Button Content="First" />
+                    <Button Content="Previous" />
+                    <Button>
+                        <Canvas Width="76" Height="76" Clip="F1 M 0,0L 76,0L 76,76L 0,76L 0,0">
+                            <Path Width="20.5832" Height="31.6667" Canvas.Left="30.0833" Canvas.Top="22.1667" Stretch="Fill" Fill="#ffffff" Data="F1 M 30.0833,22.1667L 50.6665,37.6043L 50.6665,38.7918L 30.0833,53.8333L 30.0833,22.1667 Z "/>
+                        </Canvas>
+                    </Button>
+                    <Button Content="Next" />
+                    <Button Content="Last" />
+                </StackPanel>
+
+                <ListBox DataContext="{Binding SelectedAnimation}" ItemsSource="{Binding KeyFrames}" BorderThickness="1" MinHeight="64">
                     <ListBox.ItemsPanel>
                         <ItemsPanelTemplate>
                             <StackPanel Orientation="Horizontal" />
@@ -33,7 +44,7 @@
                     </ListBox.ItemsPanel>
                     <ListBox.ItemTemplate>
                         <DataTemplate DataType="sprites:KeyFrameViewModel">
-                            <Image>
+                            <Image Width="64" Height="64" SnapsToDevicePixels="True" Stretch="Uniform" StretchDirection="DownOnly">
                                 <Image.Source>
                                     <CroppedBitmap Source="{Binding ImagePath}" SourceRect="{Binding Region}" />
                                 </Image.Source>

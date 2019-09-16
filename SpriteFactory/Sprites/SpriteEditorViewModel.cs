@@ -144,6 +144,8 @@ namespace SpriteFactory.Sprites
             set => SetPropertyValue(ref _selectedAnimation, value, nameof(SelectedAnimation));
         }
 
+        public ObservableCollection<KeyFrameViewModel> SelectedKeyFrames { get; } = new ObservableCollection<KeyFrameViewModel>();
+
         public ICommand AddAnimationCommand { get; }
         public ICommand RemoveAnimationCommand { get; }
 
@@ -152,6 +154,12 @@ namespace SpriteFactory.Sprites
             var animation = new KeyFrameAnimationViewModel {Name = $"animation{Animations.Count}"};
             Animations.Add(animation);
             SelectedAnimation = animation;
+
+            if (SelectedKeyFrames.Any())
+            {
+                SelectedAnimation.KeyFrames.AddRange(SelectedKeyFrames);
+                SelectedKeyFrames.Clear();
+            }
         }
 
         private void RemoveAnimation()
@@ -199,14 +207,14 @@ namespace SpriteFactory.Sprites
         {
             if (mouseState.LeftButton == ButtonState.Pressed)
             {
-                AddAnimation();
+                SelectedKeyFrames.Clear();
                 var frameIndex = GetFrameIndex();
 
                 if (frameIndex.HasValue)
                 {
                     var index = frameIndex.Value;
                     var keyFrame = new KeyFrameViewModel(index, () => TexturePath, GetFrameRectangle);
-                    SelectedAnimation?.KeyFrames.Add(keyFrame);
+                    SelectedKeyFrames.Add(keyFrame);
                 }
             }
         }
@@ -255,14 +263,14 @@ namespace SpriteFactory.Sprites
             if (mouseState.RightButton == ButtonState.Pressed)
                 Camera.Move(mouseDelta);
 
-            if (mouseState.LeftButton == ButtonState.Pressed && SelectedAnimation != null)
+            if (mouseState.LeftButton == ButtonState.Pressed) // && SelectedAnimation != null)
             {
                 var frameIndex = GetFrameIndex();
 
-                if (frameIndex.HasValue && SelectedAnimation.KeyFrames.All(k => k.Index != frameIndex.Value))
+                if (frameIndex.HasValue && SelectedKeyFrames.All(k => k.Index != frameIndex.Value))
                 {
                     var keyFrame = new KeyFrameViewModel(frameIndex.Value, () => TexturePath, GetFrameRectangle);
-                    SelectedAnimation?.KeyFrames.Add(keyFrame);
+                    SelectedKeyFrames.Add(keyFrame);
                 }
             }
 
@@ -344,12 +352,18 @@ namespace SpriteFactory.Sprites
             _spriteBatch.Begin(blendState: BlendState.AlphaBlend, samplerState: SamplerState.PointWrap, transformMatrix: Camera.GetViewMatrix());
             _spriteBatch.Draw(_backgroundTexture, sourceRectangle: boundingRectangle, destinationRectangle: boundingRectangle, color: Color.White);
 
+            foreach (var keyFrame in SelectedKeyFrames)
+            {
+                var keyFrameRectangle = GetFrameRectangle(keyFrame.Index);
+                _spriteBatch.FillRectangle(keyFrameRectangle, Color.CornflowerBlue * 0.5f);
+            }
+
             if (SelectedAnimation != null)
             {
                 foreach (var keyFrame in SelectedAnimation.KeyFrames)
                 {
                     var keyFrameRectangle = GetFrameRectangle(keyFrame.Index);
-                    _spriteBatch.FillRectangle(keyFrameRectangle, Color.CornflowerBlue * 0.5f);
+                    _spriteBatch.FillRectangle(keyFrameRectangle, Color.Gray * 0.25f);
                 }
             }
 
