@@ -121,17 +121,45 @@
             </StackPanel>
 
             <Label Content="Animations" />
-            <StackPanel Orientation="Horizontal">
-                <Button Content="Add" Command="{Binding AddAnimationCommand}" />
-                <Button Content="Remove" Command="{Binding RemoveAnimationCommand}" />
-            </StackPanel>
-            <ListBox ItemsSource="{Binding Animations}" SelectedItem="{Binding SelectedAnimation}" BorderThickness="1" MinHeight="200">
-                <ListBox.ItemTemplate>
-                    <DataTemplate DataType="sprites:KeyFrameAnimationViewModel">
-                        <controls:EditableTextBlock Text="{Binding Name}" />
-                    </DataTemplate>
-                </ListBox.ItemTemplate>
-            </ListBox>
+            <Border BorderThickness="1" BorderBrush="White">
+                <ToolBarPanel>
+                    <ToolBar ToolBarTray.IsLocked="True">
+                        <Button Command="{Binding AddAnimationCommand}" ToolTip="Add a new animation">
+                            <StackPanel Orientation="Horizontal">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="M19,13H13V19H11V13H5V11H11V5H13V11H19V13Z" Fill="White" />
+                                </Canvas>
+                                <TextBlock Text="Add" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding RemoveAnimationCommand}" ToolTip="Remove the selected animation">
+                            <StackPanel Orientation="Horizontal">
+                                <Canvas Width="24" Height="24">
+                                    <Path Data="M19,13H5V11H19V13Z" Fill="White" />
+                                </Canvas>
+                                <TextBlock Text="Remove" VerticalAlignment="Center" />
+                            </StackPanel>
+                        </Button>
+                        <Button Command="{Binding MoveAnimationUpCommand}" ToolTip="Move the selected animation up">
+                            <Canvas Width="24" Height="24">
+                                <Path Data="M15,20H9V12H4.16L12,4.16L19.84,12H15V20Z" Fill="White" />
+                            </Canvas>
+                        </Button>
+                        <Button Command="{Binding MoveAnimationDownCommand}" ToolTip="Move the selected animation down">
+                            <Canvas Width="24" Height="24">
+                                <Path Data="M9,4H15V12H19.84L12,19.84L4.16,12H9V4Z" Fill="White" />
+                            </Canvas>
+                        </Button>
+                    </ToolBar>
+                    <ListBox ItemsSource="{Binding Animations}" SelectedItem="{Binding SelectedAnimation}" MinHeight="200">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate DataType="sprites:KeyFrameAnimationViewModel">
+                                <controls:EditableTextBlock Text="{Binding Name}" />
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </ToolBarPanel>
+            </Border>
         </StackPanel>
     </Grid>
 </UserControl>

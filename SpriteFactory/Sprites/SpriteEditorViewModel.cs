@@ -27,6 +27,8 @@ namespace SpriteFactory.Sprites
 
             AddAnimationCommand = new Command(AddAnimation);
             RemoveAnimationCommand = new Command(RemoveAnimation, () => SelectedAnimation != null);
+            MoveAnimationUpCommand = new Command(() => MoveAnimation(-1), () => SelectedAnimation != null);
+            MoveAnimationDownCommand = new Command(() => MoveAnimation(1), () => SelectedAnimation != null);
 
             SelectedPreviewZoom = PreviewZoomOptions.LastOrDefault();
 
@@ -52,6 +54,20 @@ namespace SpriteFactory.Sprites
                 }
             });
             DeleteFrameCommand = new Command(() => SelectedAnimation?.KeyFrames.Remove(SelectedAnimation.SelectedKeyFrame));
+        }
+
+        private void MoveAnimation(int increment)
+        {
+            var selectedAnimation = SelectedAnimation;
+            var index = Animations.IndexOf(selectedAnimation);
+            var newIndex = index + increment;
+
+            if(newIndex < 0 || newIndex >= Animations.Count)
+                return;
+
+            Animations.RemoveAt(index);
+            Animations.Insert(newIndex, selectedAnimation);
+            SelectedAnimation = selectedAnimation;
         }
 
         private void IncrementKeyFrameIndex(int increment)
@@ -194,6 +210,8 @@ namespace SpriteFactory.Sprites
 
         public ICommand AddAnimationCommand { get; }
         public ICommand RemoveAnimationCommand { get; }
+        public ICommand MoveAnimationUpCommand { get; }
+        public ICommand MoveAnimationDownCommand { get; }
 
         public ICommand GoToFirstFrameCommand { get; }
         public ICommand BackOneFrameCommand { get; }
@@ -202,6 +220,7 @@ namespace SpriteFactory.Sprites
         public ICommand GoToLastFrameCommand { get; }
 
         public ICommand DeleteFrameCommand { get; }
+
 
         private void AddAnimation()
         {

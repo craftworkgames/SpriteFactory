@@ -3,6 +3,7 @@
     <OutputType>WinExe</OutputType>
     <TargetFramework>net472</TargetFramework>
     <UseWPF>true</UseWPF>
+    <ApplicationIcon>sprite-factory.ico</ApplicationIcon>
   </PropertyGroup>
   
   <ItemGroup>
@@ -21,6 +22,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Resources\sprite-factory.ico" />
     <None Remove="Sprites\SpriteEditorView.xaml" />
   </ItemGroup>
 
@@ -32,5 +34,9 @@
 
   <ItemGroup>
     <Folder Include="Controls\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Resource Include="Resources\sprite-factory.ico" />
   </ItemGroup>
 </Project>
