@@ -53,7 +53,56 @@ namespace SpriteFactory.Sprites
                     SelectedAnimation.SelectedKeyFrame = SelectedAnimation.KeyFrames.LastOrDefault();
                 }
             });
-            DeleteFrameCommand = new Command(() => SelectedAnimation?.KeyFrames.Remove(SelectedAnimation.SelectedKeyFrame));
+
+            AddSelectedFramesCommand = new Command(AddSelectedKeyFrames);
+            MoveFrameLeftCommand = new Command(() => MoveFrame(-1));
+            MoveFrameRightCommand = new Command(() => MoveFrame(1));
+            DuplicateFrameCommand = new Command(DuplicateFrame);
+            DeleteFrameCommand = new Command(DeleteFrame);
+        }
+
+        private void DeleteFrame()
+        {
+            var animation = SelectedAnimation;
+            var frame = animation?.SelectedKeyFrame;
+
+            if (frame != null)
+            {
+                var index = animation.KeyFrames.IndexOf(frame);
+                animation.KeyFrames.Remove(frame);
+                animation.SelectedKeyFrame = index < animation.KeyFrames.Count ? animation.KeyFrames[index] : animation.KeyFrames.LastOrDefault();
+            }
+        }
+
+        private void DuplicateFrame()
+        {
+            var animation = SelectedAnimation;
+            var frame = animation?.SelectedKeyFrame;
+            
+            if (frame != null)
+            {
+                var index = animation.KeyFrames.IndexOf(frame);
+                animation.KeyFrames.Insert(index, new KeyFrameViewModel(frame.Index, () => TexturePath, GetFrameRectangle));
+            }
+        }
+
+        private void MoveFrame(int increment)
+        {
+            var animation = SelectedAnimation;
+            var frame = animation?.SelectedKeyFrame;
+
+            if (frame != null)
+            {
+                var index = animation.KeyFrames.IndexOf(frame);
+                var newIndex = index + increment;
+
+                if (newIndex >= 0 && newIndex < animation.KeyFrames.Count)
+                {
+                    animation.KeyFrames.Remove(frame);
+                    animation.KeyFrames.Insert(newIndex, new KeyFrameViewModel(frame.Index, () => TexturePath, GetFrameRectangle));
+                    animation.SelectedKeyFrame = animation.KeyFrames[newIndex];
+                }
+            }
         }
 
         private void MoveAnimation(int increment)
@@ -219,20 +268,27 @@ namespace SpriteFactory.Sprites
         public ICommand ForewardOneFrameCommand { get; }
         public ICommand GoToLastFrameCommand { get; }
 
+        public ICommand AddSelectedFramesCommand { get; }
+        public ICommand MoveFrameLeftCommand { get; }
+        public ICommand MoveFrameRightCommand { get; }
+        public ICommand DuplicateFrameCommand { get; }
         public ICommand DeleteFrameCommand { get; }
 
+        private void AddSelectedKeyFrames()
+        {
+            if (SelectedAnimation != null && SelectedKeyFrames.Any())
+            {
+                SelectedAnimation.KeyFrames.AddRange(SelectedKeyFrames);
+                SelectedKeyFrames.Clear();
+            }
+        }
 
         private void AddAnimation()
         {
             var animation = new KeyFrameAnimationViewModel {Name = $"animation{Animations.Count}"};
             Animations.Add(animation);
             SelectedAnimation = animation;
-
-            if (SelectedKeyFrames.Any())
-            {
-                SelectedAnimation.KeyFrames.AddRange(SelectedKeyFrames);
-                SelectedKeyFrames.Clear();
-            }
+            AddSelectedKeyFrames();
         }
 
         private void RemoveAnimation()
