@@ -1,0 +1,36 @@
+﻿<mah:MetroWindow 
+    x:Class="SpriteFactory.About.AboutWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+    xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
+    xmlns:about="clr-namespace:SpriteFactory.About"
+    mc:Ignorable="d" 
+    Width="400"
+    Height="260"
+    ShowMinButton="False" 
+    ShowMaxRestoreButton="False"
+    ShowIconOnTitleBar="False"
+    ShowInTaskbar="False"
+    WindowStartupLocation="CenterOwner"
+    Background="{StaticResource WindowBackgroundBrush}" d:DataContext="{d:DesignInstance about:AboutWindowViewModel}">
+
+    <DockPanel LastChildFill="True">
+        <Button DockPanel.Dock="Bottom" HorizontalAlignment="Center" MinWidth="100" Padding="10" Margin="10" Content="OK" Click="OkayButton_Click" />
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center">
+            <Label FontSize="22" Content="{Binding Name}" HorizontalAlignment="Center" />
+            <Label Content="{Binding Version}" HorizontalAlignment="Center" />
+            <Rectangle Width="20" Height="1" Fill="White" Margin="5" />
+            <TextBlock>
+                <Span Foreground="White">Become a Patron</Span><LineBreak />
+                <Hyperlink Click="Hyperlink_OnClick" NavigateUri="https://www.patreon.com/craftworkgames">https://www.patreon.com/craftworkgames</Hyperlink>
+                <LineBreak />
+            </TextBlock>
+            <TextBlock HorizontalAlignment="Center">
+                <Span Foreground="White">Report an issue</Span><LineBreak />
+                <Hyperlink Click="Hyperlink_OnClick" NavigateUri="https://github.com/craftworkgames/SpriteFactory">https://github.com/craftworkgames/SpriteFactory</Hyperlink>
+            </TextBlock>
+        </StackPanel>
+    </DockPanel>
+</mah:MetroWindow>

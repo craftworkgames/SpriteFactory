@@ -1,5 +1,9 @@
-﻿using System.Windows;
+﻿using System.Reflection;
+using System.Windows;
+using Catel.IoC;
+using Catel.MVVM;
 using Serilog;
+using SpriteFactory.About;
 
 namespace SpriteFactory
 {
@@ -8,6 +12,7 @@ namespace SpriteFactory
         private ILogger _logger;
 
         public const string Name = "Sprite Factory";
+        public static string Version => Assembly.GetAssembly(typeof(App)).GetName().Version.ToString();
 
         protected override void OnStartup(StartupEventArgs e)
         {
@@ -18,6 +23,9 @@ namespace SpriteFactory
             Log.Logger = _logger;
 
             _logger.Information("Application started.");
+
+            var viewLocator = ServiceLocator.Default.ResolveType<IViewLocator>();
+            viewLocator.Register(typeof(AboutWindowViewModel), typeof(AboutWindow));
 
             base.OnStartup(e);
         }

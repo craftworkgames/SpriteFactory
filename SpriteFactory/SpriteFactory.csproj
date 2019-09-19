@@ -22,18 +22,18 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="Controls\AboutWindow.xaml" />
     <None Remove="Resources\sprite-factory.ico" />
     <None Remove="Sprites\SpriteEditorView.xaml" />
   </ItemGroup>
 
   <ItemGroup>
+    <Compile Update="About\AboutWindow.xaml.cs">
+      <SubType>Code</SubType>
+    </Compile>
     <Compile Update="Sprites\SpriteEditorView.xaml.cs">
       <SubType>Code</SubType>
     </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <Folder Include="Controls\" />
   </ItemGroup>
 
   <ItemGroup>

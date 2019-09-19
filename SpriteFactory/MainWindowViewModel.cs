@@ -4,6 +4,7 @@ using System.Windows.Input;
 using Catel.IoC;
 using Catel.MVVM;
 using Catel.Services;
+using SpriteFactory.About;
 using SpriteFactory.Documents;
 using SpriteFactory.Sprites;
 
@@ -27,6 +28,16 @@ namespace SpriteFactory
                 Document.IsSaved = false;
                 UpdateTitle();
             };
+
+            AboutCommand = new Command(About);
+        }
+
+        public ICommand AboutCommand { get; }
+
+        private async void About()
+        {
+            var uiService = DependencyResolver.Resolve<IUIVisualizerService>();
+            await uiService.ShowDialogAsync<AboutWindowViewModel>();
         }
 
         protected override async Task InitializeAsync()
@@ -112,6 +123,7 @@ namespace SpriteFactory
         }
 
         public ICommand SaveAsCommand { get; }
+
         public async void SaveAs()
         {
             var saveFileService = OpenFileDialog<ISaveFileService>();

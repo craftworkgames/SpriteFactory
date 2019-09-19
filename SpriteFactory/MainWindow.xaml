@@ -43,10 +43,10 @@
                 <MenuItem Header="_Delete" />
                 <Separator />
                 <MenuItem Header="Select _All" />
-            </MenuItem>
-            <MenuItem Header="_Help">
-                <MenuItem Header="_About Sprite Factory" />
             </MenuItem>-->
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About..." Command="{Binding AboutCommand}" />
+            </MenuItem>
         </Menu>
 
         <sprites:SpriteEditorView DataContext="{Binding SpriteEditor}" />
