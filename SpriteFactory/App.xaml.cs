@@ -1,5 +1,4 @@
-﻿using System.Reflection;
-using System.Windows;
+﻿using System.Windows;
 using Catel.IoC;
 using Catel.MVVM;
 using Serilog;
@@ -12,7 +11,12 @@ namespace SpriteFactory
         private ILogger _logger;
 
         public const string Name = "Sprite Factory";
-        public static string Version => Assembly.GetAssembly(typeof(App)).GetName().Version.ToString();
+
+#if DEBUG
+        public static string Version => "DEBUG";
+#else
+        public static string Version => $"{System.Reflection.Assembly.GetAssembly(typeof(App)).GetName().Version}";
+#endif
 
         protected override void OnStartup(StartupEventArgs e)
         {
