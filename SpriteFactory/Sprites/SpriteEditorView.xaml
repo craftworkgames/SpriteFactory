@@ -44,7 +44,7 @@
             <ToolBarPanel DockPanel.Dock="Bottom" Orientation="Horizontal" HorizontalAlignment="Center">
                 <ToolBar ToolBarTray.IsLocked="True">
                     <StackPanel Orientation="Horizontal" >
-                        <Button Command="{Binding GoToFirstFrameCommand}" Style="{StaticResource ChromelessButtonStyle}" ToolTip="Jump to first frame">
+                        <Button Command="{Binding GoToFirstFrameCommand}" Style="{StaticResource ChromelessButtonStyle}" ToolTip="Jump to the first frame">
                             <Canvas Width="24" Height="24">
                                 <Path Data="M20,5V19L13,12M6,5V19H4V5M13,5V19L6,12" Fill="White" />
                             </Canvas>
@@ -80,12 +80,12 @@
                                 </Style>
                             </Button.Style>
                         </Button>
-                        <Button Command="{Binding ForewardOneFrameCommand}" Style="{StaticResource ChromelessButtonStyle}" ToolTip="Go foreward one frame">
+                        <Button Command="{Binding ForwardOneFrameCommand}" Style="{StaticResource ChromelessButtonStyle}" ToolTip="Go forward one frame">
                             <Canvas Width="24" Height="24">
                                 <Path Data="M16,18H18V6H16M6,18L14.5,12L6,6V18Z" Fill="White" />
                             </Canvas>
                         </Button>
-                        <Button Command="{Binding GoToLastFrameCommand}" Style="{StaticResource ChromelessButtonStyle}" ToolTip="Jump to last frame">
+                        <Button Command="{Binding GoToLastFrameCommand}" Style="{StaticResource ChromelessButtonStyle}" ToolTip="Jump to the last frame">
                             <Canvas Width="24" Height="24">
                                 <Path Data="M4,5V19L11,12M18,5V19H20V5M11,5V19L18,12" Fill="White" />
                             </Canvas>

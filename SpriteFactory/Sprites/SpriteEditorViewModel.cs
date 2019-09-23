@@ -44,7 +44,7 @@ namespace SpriteFactory.Sprites
             });
             BackOneFrameCommand = new Command(() => IncrementKeyFrameIndex(-1));
             PlayCommand = new Command(() => IsPlaying = !IsPlaying);
-            ForewardOneFrameCommand = new Command(() => IncrementKeyFrameIndex(1));
+            ForwardOneFrameCommand = new Command(() => IncrementKeyFrameIndex(1));
             GoToLastFrameCommand = new Command(() =>
             {
                 if (SelectedAnimation != null)
@@ -265,7 +265,7 @@ namespace SpriteFactory.Sprites
         public ICommand GoToFirstFrameCommand { get; }
         public ICommand BackOneFrameCommand { get; }
         public ICommand PlayCommand { get; }
-        public ICommand ForewardOneFrameCommand { get; }
+        public ICommand ForwardOneFrameCommand { get; }
         public ICommand GoToLastFrameCommand { get; }
 
         public ICommand AddSelectedFramesCommand { get; }
