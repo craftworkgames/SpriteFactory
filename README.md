@@ -2,7 +2,7 @@
 
 A sprite sheet animation editor for MonoGame.
 
-![sprite-factory-dwarf](sprite-factory-dwarf.gif)
+![Sprite Factory](sprite-factory-screenshot.gif)
 
 ## In development
 
