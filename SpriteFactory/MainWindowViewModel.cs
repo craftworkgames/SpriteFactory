@@ -86,7 +86,7 @@ namespace SpriteFactory
         private T OpenFileDialog<T>() where T : IFileSupport
         {
             var service = DependencyResolver.Resolve<T>();
-            service.Filter = "Sprites (*.sprites)|*.sprites";
+            service.Filter = $"{App.Name} (*{App.FileExtension})|*{App.FileExtension}";
             return service;
         }
 
@@ -127,7 +127,7 @@ namespace SpriteFactory
         public async void SaveAs()
         {
             var saveFileService = OpenFileDialog<ISaveFileService>();
-            saveFileService.FileName = Path.ChangeExtension(SpriteEditor.TextureName, ".sprites");
+            saveFileService.FileName = Path.ChangeExtension(SpriteEditor.TextureName, App.FileExtension);
 
             if (await saveFileService.DetermineFileAsync())
             {

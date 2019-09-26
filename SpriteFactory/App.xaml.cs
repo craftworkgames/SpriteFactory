@@ -11,6 +11,7 @@ namespace SpriteFactory
         private ILogger _logger;
 
         public const string Name = "Sprite Factory";
+        public const string FileExtension = ".sf";
 
 #if DEBUG
         public static string Version => "DEBUG";
