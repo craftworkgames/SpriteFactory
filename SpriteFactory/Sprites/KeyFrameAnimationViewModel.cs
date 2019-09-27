@@ -35,20 +35,20 @@ namespace SpriteFactory.Sprites
 
         public override string ToString() => Name;
 
-        public KeyFrameAnimation ToAnimation()
+        public KeyFrameAnimationCycle ToAnimationCycle()
         {
             var keyFrames = KeyFrames.Select(i => i.Index).ToArray();
-            return new KeyFrameAnimation(Name, keyFrames);
+            return new KeyFrameAnimationCycle(keyFrames);
         }
 
-        public static KeyFrameAnimationViewModel FromAnimation(KeyFrameAnimation animation, Func<string> getImagePath, Func<int, Rectangle> getRectangle)
+        public static KeyFrameAnimationViewModel FromAnimation(string name, KeyFrameAnimationCycle cycle, Func<string> getImagePath, Func<int, Rectangle> getRectangle)
         {
-            var keyFrameViewModels = animation.KeyFrames
+            var keyFrameViewModels = cycle.Frames
                 .Select(k => new KeyFrameViewModel(k, getImagePath, getRectangle));
 
             return new KeyFrameAnimationViewModel
             {
-                Name = animation.Name,
+                Name = name,
                 KeyFrames = new ObservableCollection<KeyFrameViewModel>(keyFrameViewModels)
             };
         }

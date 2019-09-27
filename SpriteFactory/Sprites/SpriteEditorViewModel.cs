@@ -422,23 +422,30 @@ namespace SpriteFactory.Sprites
         {
             return new SpriteFactoryFile
             {
-                Texture = document.GetRelativePath(TexturePath), 
-                TileWidth = TileWidth,
-                TileHeight = TileHeight,
-                Animations = Animations
-                    .Select(a => a.ToAnimation())
-                    .ToList()
+                TextureAtlas = new TextureAtlas
+                {
+                    Texture = document.GetRelativePath(TexturePath),
+                    RegionWidth = TileWidth,
+                    RegionHeight = TileHeight
+                },
+                Cycles = Animations.ToDictionary(a => a.Name, a => a.ToAnimationCycle())
             };
         }
 
         public void SetDocumentContent(Document<SpriteFactoryFile> document)
         {
             var data = document.Content;
-            TexturePath = document.IsNew ? null : document.GetFullPath(data.Texture);
-            TileWidth = data.TileWidth;
-            TileHeight = data.TileHeight;
+            TexturePath = document.IsNew ? null : document.GetFullPath(data.TextureAtlas.Texture);
+            TileWidth = data.TextureAtlas.RegionWidth;
+            TileHeight = data.TextureAtlas.RegionHeight;
             Animations.Clear();
-            Animations.AddRange(data.Animations.Select(a => KeyFrameAnimationViewModel.FromAnimation(a, () => TexturePath, GetFrameRectangle)));
+
+            foreach (var keyValuePair in data.Cycles)
+            {
+                var name = keyValuePair.Key;
+                var animation = keyValuePair.Value;
+                Animations.Add(KeyFrameAnimationViewModel.FromAnimation(name, animation, () => TexturePath, GetFrameRectangle));
+            }
             SelectedAnimation = Animations.FirstOrDefault();
         }
 
