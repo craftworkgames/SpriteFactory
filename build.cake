@@ -18,7 +18,7 @@ Task("Publish")
       Information("##teamcity[progressMessage 'Publishing...']");    
 
       var artifactsDirectory = "./artifacts";
-      var outputDirectory = $"{artifactsDirectory}/{projectName}-v{gitVersion.FullSemVer}";
+      var outputDirectory = $"{artifactsDirectory}/{projectName}-v{gitVersion.SemVer}";
       var settings = new DotNetCorePublishSettings
       {
          NoRestore = true,
