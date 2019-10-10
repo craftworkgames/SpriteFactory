@@ -6,9 +6,10 @@ An open source sprite sheet animation editor.
 
 ## What does it do?
 
-I made Sprite Factory to solve a very specific problem. Sometimes you find awesome art on the internet you want to animate it for your game.
+I made Sprite Factory to solve a very specific problem. Sometimes you find awesome art on the internet and you want to animate it for your game.
 
-![Pigs](Examples/adventurer.png)
+![Adventurer](Examples/adventurer.png)
+
 <small>credit: [Eltan](https://www.patreon.com/posts/pig-sprites-30296626)</small>
 
 You could always hand roll the animations in code but that can get tedious pretty quickly. Especially if you've got a lot of content to animate.
