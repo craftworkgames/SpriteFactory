@@ -273,7 +273,7 @@ namespace SpriteFactory.Sprites
         public ICommand MoveFrameRightCommand { get; }
         public ICommand DuplicateFrameCommand { get; }
         public ICommand DeleteFrameCommand { get; }
-
+        
         private void AddSelectedKeyFrames()
         {
             if (SelectedAnimation != null && SelectedKeyFrames.Any())

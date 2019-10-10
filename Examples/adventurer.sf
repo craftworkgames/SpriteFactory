@@ -1,0 +1,53 @@
+{
+  "textureAtlas": {
+    "texture": "adventurer.png",
+    "regionWidth": 32,
+    "regionHeight": 32
+  },
+  "cycles": {
+    "idle": {
+      "frames": [0,1,2,3,4,5,6,7,8,9,10,11,12],
+      "isLooping": true
+    },
+    "walk": {
+      "frames": [13,14,15,16,17,18,19,20],
+      "isLooping": false
+    },
+    "attack": {
+      "frames": [26,27,28,29,30,31,32,33,34,35],
+      "isLooping": false
+    },
+    "strike": {
+      "frames": [39,40,41,42,43,44,45,46,47,48],
+      "isLooping": false
+    },
+    "lunge": {
+      "frames": [52,53,54,55,56,57,58,59,60,61],
+      "isLooping": false
+    },
+    "jump": {
+      "frames": [65,66,67,68,69,70],
+      "isLooping": false
+    },
+    "hurt": {
+      "frames": [78,79,80,81],
+      "isLooping": false
+    },
+    "die": {
+      "frames": [91,92,93,94,95,96,97],
+      "isLooping": false
+    },
+    "climb": {
+      "frames": [104,105,106,107],
+      "isLooping": false
+    },
+    "shoot": {
+      "frames": [117,118,119,120,121,122,123,124],
+      "isLooping": false
+    },
+    "swim": {
+      "frames": [130,131,132,133,134,135],
+      "isLooping": false
+    }
+  }
+}

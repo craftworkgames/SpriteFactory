@@ -188,6 +188,10 @@
                     </ListBox>
                 </ToolBarPanel>
             </Border>
+
+            <Border BorderThickness="1" BorderBrush="White" DataContext="{Binding SelectedAnimation}">
+                <CheckBox Content="Is Looping" IsChecked="{Binding IsLooping}" />
+            </Border>
         </StackPanel>
     </Grid>
 </UserControl>

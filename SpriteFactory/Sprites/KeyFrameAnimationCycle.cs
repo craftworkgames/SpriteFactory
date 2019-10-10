@@ -8,5 +8,6 @@
         }
 
         public int[] Frames { get; }
+        public bool IsLooping { get; set; }
     }
 }
