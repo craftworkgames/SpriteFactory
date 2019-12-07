@@ -121,7 +121,7 @@ namespace SpriteFactory.Sprites
 
         private void IncrementKeyFrameIndex(int increment)
         {
-            if (SelectedAnimation != null)
+            if (SelectedAnimation?.SelectedKeyFrame != null)
             {
                 var index = SelectedAnimation.KeyFrames.IndexOf(SelectedAnimation.SelectedKeyFrame) + increment;
 
