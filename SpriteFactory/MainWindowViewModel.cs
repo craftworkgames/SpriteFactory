@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using System.Windows.Input;
 using Catel.IoC;
@@ -28,9 +29,24 @@ namespace SpriteFactory
                 Document.IsSaved = false;
                 UpdateTitle();
             };
-
+            SpriteEditor.ContentLoaded += SpriteEditorOnContentLoaded;
+            
             AboutCommand = new Command(About);
         }
+
+        private void SpriteEditorOnContentLoaded(object sender, EventArgs e)
+        {
+            string[] commandLineArgs = Environment.GetCommandLineArgs();
+            if (commandLineArgs.Length > 1)
+            {
+                Load(commandLineArgs[1]);
+            }
+            else
+            {
+                NewCommand.Execute(null);
+            }
+        }
+
 
         public ICommand AboutCommand { get; }
 
@@ -38,11 +54,6 @@ namespace SpriteFactory
         {
             var uiService = DependencyResolver.Resolve<IUIVisualizerService>();
             await uiService.ShowDialogAsync<AboutWindowViewModel>();
-        }
-
-        protected override async Task InitializeAsync()
-        {
-            await New();
         }
 
         private Document<SpriteFactoryFile> _document;
@@ -100,12 +111,17 @@ namespace SpriteFactory
                 if (await openFileService.DetermineFileAsync())
                 {
                     var filePath = openFileService.FileName;
-                    Document = Document<SpriteFactoryFile>.Load(filePath);
-                    SpriteEditor.SetDocumentContent(Document);
-                    Document.IsSaved = true;
-                    UpdateTitle();
+                    Load(filePath);
                 }
             }
+        }
+
+        public void Load(string filePath)
+        {
+            Document = Document<SpriteFactoryFile>.Load(filePath);
+            SpriteEditor.SetDocumentContent(Document);
+            Document.IsSaved = true;
+            UpdateTitle();
         }
 
         public ICommand SaveCommand { get; }
