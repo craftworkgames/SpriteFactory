@@ -34,10 +34,18 @@ namespace SpriteFactory.Sprites
         public ObservableCollection<KeyFrameViewModel> KeyFrames { get; set; } = new ObservableCollection<KeyFrameViewModel>();
         
         private bool _isLooping;
+        private float _frameDuration = 0.2f;
+
         public bool IsLooping
         {
             get => _isLooping;
             set => SetPropertyValue(ref _isLooping, value, nameof(IsLooping));
+        }
+
+        public float FrameDuration
+        {
+            get => _frameDuration;
+            set => SetPropertyValue(ref _frameDuration, value, nameof(FrameDuration));
         }
 
         public override string ToString() => Name;
@@ -50,7 +58,8 @@ namespace SpriteFactory.Sprites
 
             return new KeyFrameAnimationCycle(keyFrames)
             {
-                IsLooping = IsLooping
+                IsLooping = IsLooping,
+                FrameDuration = FrameDuration
             };
         }
 
@@ -63,7 +72,8 @@ namespace SpriteFactory.Sprites
             {
                 Name = name,
                 KeyFrames = new ObservableCollection<KeyFrameViewModel>(keyFrameViewModels),
-                IsLooping = cycle.IsLooping
+                IsLooping = cycle.IsLooping,
+                FrameDuration = cycle.FrameDuration
             };
         }
     }
