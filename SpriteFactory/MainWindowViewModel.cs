@@ -155,10 +155,7 @@ namespace SpriteFactory
                         return true;
                 }
             }
-
             return true;
         }
     }
-
-
 }

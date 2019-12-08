@@ -6,6 +6,7 @@
              xmlns:sprites="clr-namespace:SpriteFactory.Sprites"
              xmlns:controls="clr-namespace:SpriteFactory.Controls"
              xmlns:monoGameControls="clr-namespace:SpriteFactory.MonoGameControls"
+             xmlns:mah="http://metro.mahapps.com/winfx/xaml/controls"
              mc:Ignorable="d" 
              d:DesignWidth="800"
              d:DesignHeight="600" 
@@ -189,9 +190,23 @@
                 </ToolBarPanel>
             </Border>
 
-            <Border BorderThickness="1" BorderBrush="White" DataContext="{Binding SelectedAnimation}">
-                <CheckBox Content="Is Looping" IsChecked="{Binding IsLooping}" />
-            </Border>
+            <Grid DataContext="{Binding SelectedAnimation}">
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="Auto"/>
+                    <ColumnDefinition/>
+                </Grid.ColumnDefinitions>
+
+                <Grid.RowDefinitions>
+                    <RowDefinition></RowDefinition>
+                    <RowDefinition></RowDefinition>
+                </Grid.RowDefinitions>
+
+                <TextBlock Margin="5" VerticalAlignment="Center" Grid.Column="0" Grid.Row="0" Text="Is Looping" Foreground="White" />
+                <CheckBox Grid.Column="1" Grid.Row="0" IsChecked="{Binding IsLooping}" />
+
+                <TextBlock Margin="5" VerticalAlignment="Center" Grid.Column="0" Grid.Row="1" Text="Frame duration" Foreground="White" />
+                <mah:NumericUpDown StringFormat="N2" Grid.Column="1" Grid.Row="1" NumericInputMode="Decimal" Interval="0.01" Minimum="0.01" HorizontalContentAlignment="Left" Value="{Binding FrameDuration}"/>
+            </Grid>
         </StackPanel>
     </Grid>
 </UserControl>

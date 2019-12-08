@@ -9,5 +9,6 @@
 
         public int[] Frames { get; }
         public bool IsLooping { get; set; }
+        public float FrameDuration { get; set; }
     }
 }

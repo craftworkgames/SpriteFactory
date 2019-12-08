@@ -387,7 +387,7 @@ namespace SpriteFactory.Sprites
         }
 
         private int _frameIndex;
-        private int _nextFrameHackCounter;
+        private float _nextFrameHackCounter;
         
         private Rectangle GetPreviewRectangle()
         {
@@ -451,11 +451,19 @@ namespace SpriteFactory.Sprites
 
         private KeyFrameViewModel GetCurrentFrame()
         {
-            if (IsPlaying)
-            {
-                _nextFrameHackCounter++;
+            if (SelectedAnimation.SelectedKeyFrame == null)
+                return SelectedAnimation.KeyFrames.FirstOrDefault();
 
-                if (_nextFrameHackCounter >= 10)
+            return SelectedAnimation.SelectedKeyFrame;
+        }
+        
+        public override void Update(GameTime gameTime)
+        {
+            if (IsPlaying && SelectedAnimation?.KeyFrames.Count > 0)
+            {
+                _nextFrameHackCounter += (float)gameTime.ElapsedGameTime.TotalSeconds;
+
+                if (_nextFrameHackCounter >= SelectedAnimation.FrameDuration)
                 {
                     _frameIndex++;
                     _nextFrameHackCounter = 0;
@@ -466,17 +474,7 @@ namespace SpriteFactory.Sprites
 
                 var frame = SelectedAnimation.KeyFrames[_frameIndex];
                 SelectedAnimation.SelectedKeyFrame = frame;
-                return frame;
             }
-
-            if (SelectedAnimation.SelectedKeyFrame == null)
-                return SelectedAnimation.KeyFrames.FirstOrDefault();
-
-            return SelectedAnimation.SelectedKeyFrame;
-        }
-        
-        public override void Update(GameTime gameTime)
-        {
         }
 
         public override void Draw(GameTime gameTime)
