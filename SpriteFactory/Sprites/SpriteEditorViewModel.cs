@@ -1,4 +1,5 @@
-﻿using System.Collections.ObjectModel;
+﻿using System;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Windows.Input;
@@ -20,6 +21,8 @@ namespace SpriteFactory.Sprites
         private SpriteBatch _spriteBatch;
         private Texture2D _backgroundTexture;
         private SpriteFont _spriteFont;
+
+        public event EventHandler ContentLoaded;
 
         public SpriteEditorViewModel()
         {
@@ -144,6 +147,8 @@ namespace SpriteFactory.Sprites
 
             Camera = new OrthographicCamera(GraphicsDevice);
             Camera.LookAt(Vector2.Zero);
+
+            ContentLoaded?.Invoke(this, EventArgs.Empty);
         }
 
         public int Width => GraphicsDevice.Viewport.Width;
