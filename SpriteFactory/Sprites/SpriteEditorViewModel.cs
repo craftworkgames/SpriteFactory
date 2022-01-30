@@ -557,5 +557,21 @@ namespace SpriteFactory.Sprites
                 _spriteBatch.End();
             }
         }
+
+        public override void OnSizeChanged(int width, int height)
+        {
+            base.OnSizeChanged(width, height);
+
+            //Resize the viewport with the window.
+            GraphicsDevice.Viewport = new Viewport(0, 0, width, height);
+            Vector2 lookLocation = Vector2.Zero;
+            if (Texture != null)
+            {
+                lookLocation.X += Texture.Width / 2f;
+                lookLocation.Y += Texture.Height / 2f;
+            }
+
+            Camera.LookAt(lookLocation);
+        }
     }
 }
